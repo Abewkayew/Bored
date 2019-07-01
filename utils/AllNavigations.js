@@ -25,7 +25,8 @@ export const AppSwitchNavigator = createSwitchNavigator({
     Invitation: {screen: Invitation},
     ChatContainer: {screen: ChatContainer},
     SingleChat: {screen: SingleChat},
-    MyProfile: {screen: MyProfile}
+    MyProfile: {screen: MyProfile},
+    Promotion: {screen: Promotion}
 });
 
 export const AppContainer = createAppContainer(AppSwitchNavigator);

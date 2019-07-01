@@ -136,12 +136,12 @@ export default class Activities extends Component{
 
     countTotalUsers = () => {
         const activityNames = {
-            game: 'Game',
-            drink: 'Drink',
-            theatre: 'Theatre',
-            play: 'Play',
-            food: 'Food',
-            coffee: 'Coffee'
+            game: 'game',
+            drink: 'bar',
+            theatre: 'movie_theater',
+            play: 'gym',
+            food: 'restaurant',
+            coffee: 'cafe'
         }
 
         const totalGameUsers = Firebase.database().ref().child('activities/' + activityNames.game + '/users');
@@ -245,7 +245,7 @@ export default class Activities extends Component{
                         
                         <View style={styles.displayEachActivities}>
                             
-                            <TouchableHighlight onPress={() => this.handleActivityClick('Game')}>
+                            <TouchableHighlight onPress={() => this.handleActivityClick('game')}>
                                 <Card>
                                     <CardItem cardBody bordered>
                                             <Image source={require('../../../assets/images/ico_game.jpg')} style={{height: 120, width: 150}}/>
@@ -263,7 +263,7 @@ export default class Activities extends Component{
                                 </Card>
                             </TouchableHighlight>
 
-                            <TouchableHighlight onPress={() => this.handleActivityClick('Theatre')}>
+                            <TouchableHighlight onPress={() => this.handleActivityClick('movie_theater')}>
                                 <Card>
                                     <CardItem cardBody bordered>
                                         <Image source={require('../../../assets/images/ico_teatro.jpg')} style={{height: 120, width: 150}}/>
@@ -290,7 +290,7 @@ export default class Activities extends Component{
                             {/* <Text style={{color: 'white'}}>Left Side</Text>
                             <Text style={{color: 'white'}}>Right Side</Text> */}
                             
-                        <TouchableHighlight onPress={() => this.handleActivityClick('Drink')}>
+                        <TouchableHighlight onPress={() => this.handleActivityClick('bar')}>
                                 <Card>
                                     <CardItem cardBody bordered>
                                         <Image source={require('../../../assets/images/ico_chela.jpg')} style={{height: 120, width: 150}}/>
@@ -308,7 +308,7 @@ export default class Activities extends Component{
                                 </Card>
                         </TouchableHighlight>
 
-                        <TouchableHighlight onPress={() => this.handleActivityClick('Play')}>
+                        <TouchableHighlight onPress={() => this.handleActivityClick('gym')}>
                                 <Card>
                                     <CardItem cardBody bordered>
                                         <Image source={require('../../../assets/images/ico_deporte.jpg')} style={{height: 120, width: 150}}/>
@@ -333,7 +333,7 @@ export default class Activities extends Component{
                             <Text style={{color: 'white'}}>Right Side</Text> */}
                             
                             
-                            <TouchableHighlight onPress={() => this.handleActivityClick('Coffee')}>
+                            <TouchableHighlight onPress={() => this.handleActivityClick('cafe')}>
                                 <Card>
                                     <CardItem cardBody bordered>
                                         <Image source={require('../../../assets/images/ico_cafe.jpg')} style={{height: 120, width: 150}}/>
@@ -351,7 +351,7 @@ export default class Activities extends Component{
                                 </Card>
                             </TouchableHighlight>
 
-                            <TouchableHighlight onPress={() => this.handleActivityClick('Food')}>
+                            <TouchableHighlight onPress={() => this.handleActivityClick('restaurant')}>
                                 <Card>
                                     <CardItem cardBody bordered>
                                         <Image source={require('../../../assets/images/ico_restaurante.jpg')} style={{height: 120, width: 150}}/>

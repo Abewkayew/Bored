@@ -8,6 +8,8 @@ import Firebase from '../../../utils/Config';
 import ImageOverlay from "react-native-image-overlay";
 import {photos} from '../../../utils/assets';
 
+import Geolocation from 'react-native-geolocation-service';
+
 const { width } = Dimensions.get('window');
 
 export default class People extends Component{
@@ -21,14 +23,15 @@ export default class People extends Component{
             actName: ''
         }
 
+
       }
 
-    componentWillMount() {
-        const activityName = this.props.navigation.state.params.activityName 
+    componentDidMount() {
+        const actName = this.props.navigation.state.params.activityName 
 
-        const activityDatabaseReference = Firebase.database().ref().child('activities/' + activityName + '/users');
+        const activityDatabaseReference = Firebase.database().ref().child('activities/' + actName + '/users');
         
-        this.setState({loading: true, actName: activityName})
+        this.setState({loading: true, actName: actName})
      
         activityDatabaseReference.on('value', (snapshot) => {
             let data = snapshot.val();
@@ -66,6 +69,8 @@ export default class People extends Component{
 
 
 
+
+
     render(){
         // position will be a value between 0 and photos.length - 1 assuming you don't scroll pass the ends of the ScrollView
         let position = Animated.divide(this.scrollX, width);
@@ -90,7 +95,7 @@ export default class People extends Component{
         //             )
 
         
-        const {actName} = this.state
+        const {actName} = this.state.actName
 
         return(
             <View style={styles.containerPeople}>
@@ -110,14 +115,14 @@ export default class People extends Component{
                     <ScrollView>
                         <View style={styles.tabViewStyle}>
                             <TouchableHighlight>
-                                <Button  onPress={() => this.props.navigation.navigate('People', {activityName: actName})} 
+                                <Button  onPress={() => this.props.navigation.navigate('People', {activityName: 'Drink'})} 
                                         bordered light style={{width: 150, justifyContent: 'center'}}>
                                     <Text style={{color: 'white'}}>personas</Text>
                                 </Button>
                             </TouchableHighlight>
 
                             <TouchableHighlight>
-                                <Button  onPress={() => this.props.navigation.navigate('Invitation', {activityName: actName})}
+                                <Button  onPress={() => this.props.navigation.navigate('Invitation', {actName: this.state.actName})}
                                         bordered light style={{width: 150, justifyContent: 'center'}}>
                                     <Text style={{color: 'white'}}>invitaciones</Text>
                                 </Button>
