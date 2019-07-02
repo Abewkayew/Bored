@@ -32,7 +32,7 @@ export default class People extends Component{
         const activityDatabaseReference = Firebase.database().ref().child('activities/' + actName + '/users');
         
         this.setState({loading: true, actName: actName})
-     
+
         activityDatabaseReference.on('value', (snapshot) => {
             let data = snapshot.val();
             if(data){                    
@@ -45,18 +45,23 @@ export default class People extends Component{
                 })
             }
          });
+
+         this.displayPeopleData()
     }
 
     displayPeopleData = () => {
         const userDatabaseReference = Firebase.database().ref().child('users');
         const peopleKey = this.state.people
-        alert("PeopleKey : " + peopleKey)
+        console.log("PeopleKey is: ", peopleKey)
         peopleKey.map(dataKey => {
             alert("Data Key: " + dataKey)
             userDatabaseReference.child(dataKey).once("value").then(data => {
-                var key = data.key
-                alert("Datas are: ")
-            })
+                let personKey = Object.keys(data)
+                //  this.setState({
+                //      people: personKey,
+                //      loading: false
+                //  })
+                })
                 
               
         })        
@@ -68,16 +73,11 @@ export default class People extends Component{
     }
 
 
-
-
-
     render(){
         // position will be a value between 0 and photos.length - 1 assuming you don't scroll pass the ends of the ScrollView
         let position = Animated.divide(this.scrollX, width);
         const people = this.state.people
-        {
-            this.displayPeopleData
-        }
+        
         // const loadPeopleData = this.state.loading ? (
         //             <Spinner color="red"/>
         //                 ) : (
@@ -148,7 +148,7 @@ export default class People extends Component{
                                     // by default, it will expand regardless if it has a flex value or not
                                     style={{ width, height: width}}
                                     >
-                                        <Text style={{color: 'white', backgroundColor: 'green'}}>{data}</Text>
+                                        <Text style={{color: 'white', backgroundColor: 'green'}}>{data.phone}</Text>
                                     
                                     <ScrollView
                                         horizontal={true}

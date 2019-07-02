@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import {StyleSheet, View, Text, Image, ScrollView, TouchableHighlight, Dimensions, Animated} from 'react-native';
+import {StyleSheet, View, Text, Image, ScrollView, TouchableHighlight, Dimensions, Animated, Platform} from 'react-native';
 import { Container, Header, Content, Card, CardItem, Thumbnail, Button, Left, Body, Right, Spinner } from 'native-base';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
@@ -11,218 +11,160 @@ import Geolocation from 'react-native-geolocation-service';
 import { PermissionsAndroid } from 'react-native';
 
 import Permissions from 'react-native-permissions'
+import MapView, {
+    ProviderPropType,
+    Marker,
+    AnimatedRegion,
+    PROVIDER_GOOGLE
+  } from 'react-native-maps';
 
 
+
+  const screen = Dimensions.get('window');
+
+const ASPECT_RATIO = screen.width / screen.height;
+const LATITUDE = 37.78825;
+const LONGITUDE = -122.4324;
+const LATITUDE_DELTA = 0.0922;
+const LONGITUDE_DELTA = LATITUDE_DELTA * ASPECT_RATIO;
 
 const { width } = Dimensions.get('window');
-
-
-
 
 export default class Promotion extends Component{
     constructor(props){
         super(props)
+
         this.state = {
-            latitude: 0,
-            longitude: 0,
-            error: null,
-            loading: false,
-            photoPermission: ''
-        }
+            coordinate: new AnimatedRegion({
+              latitude: LATITUDE,
+              longitude: LONGITUDE,
+            }),
+          };   
+
+
+        this.actName = this.props.navigation.state.params.activityName
+        this.locationData = this.props.navigation.state.params.result
+        this.currentUserLatitude = this.props.navigation.state.params.lat
+        this.currentUserLongitude = this.props.navigation.state.params.lng
+        this.image_api = this.props.navigation.state.params.image_api
+        this.API_KEY = 'AIzaSyAizovCeZayRAZthl91it19QYFw1UF3-Jk' 
     }
 
-    _requestPermission = () => {
-        Permissions.request('photo').then(response => {
-          // Returns once the user has chosen to 'allow' or to 'not allow' access
-          // Response is one of: 'authorized', 'denied', 'restricted', or 'undetermined'
-          this.setState({ photoPermission: response })
-        })
+    animate() {
+        const { coordinate } = this.state;
+        const newCoordinate = {
+          latitude: LATITUDE + (Math.random() - 0.5) * (LATITUDE_DELTA / 2),
+          longitude: LONGITUDE + (Math.random() - 0.5) * (LONGITUDE_DELTA / 2),
+        };
+    
+        if (Platform.OS === 'android') {
+          if (this.marker) {
+            this.marker._component.animateMarkerToCoordinate(newCoordinate, 500);
+          }
+        } else {
+          coordinate.timing(newCoordinate).start();
+        }
       }
 
-
-
-    async getLocationPermission(){
-       const chckLocationPermission = PermissionsAndroid.check(PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION);
-        if (chckLocationPermission === PermissionsAndroid.RESULTS.GRANTED) {
-            alert("You've access for the location");
-        } else {
-            try {
-                const granted = await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
-                    {
-                        'title': 'Cool Location App required Location permission',
-                        'message': 'We required Location permission in order to get device location ' +
-                            'Please grant us.',
-                        'buttonPositive': 'Grant',
-                        'buttonNegative': 'Deny',
-                        'buttonNeutral': 'cancel'
-                    }
-                )
-                if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-                    alert("You've access for the location");
-                } else {
-                    alert("You don't have access for the location");
-                }
-            } catch (err) {
-                alert(err)
-            }
-        }
-
-
-
+    getInitialState() {
+        return {
+          region: {
+            latitude: 37.78825,
+            longitude: -122.4324,
+            latitudeDelta: 0.0922,
+            longitudeDelta: 0.0421,
+          },
+        };
     }
 
-
-    // async componentDidMount(){
-    //     const granted = await PermissionsAndroid.check( PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION );
-
-    //     if (granted) {
-    //         alert("Permission Granted")
-    //     } 
-    //     else {
-    //         alert("Permission Denied")
-    //     }
-    // }
-
-    componentWillMount = () => {
-        this._requestPermission();
-        // this.getLocationPermission();
-        this.setState({
-            loading: true
-          });    
-        this.getCurrentLocation();   
-        
-        this.watchID = navigator.geolocation.watchPosition(
-            position => {
-              const { coordinate, routeCoordinates, distanceTravelled } = this.state;
-              const { latitude, longitude } = position.coords;
-      
-              const newCoordinate = {
-                latitude,
-                longitude
-              };
-      
-              if (Platform.OS === "android") {
-                if (this.marker) {
-                  this.marker._component.animateMarkerToCoordinate(
-                    newCoordinate,
-                    500
-                  );
-                }
-              } else {
-                coordinate.timing(newCoordinate).start();
-              }
-              alert("Latitude: " + latitude)
-              this.setState({
-                latitude,
-                longitude,
-                routeCoordinates: routeCoordinates.concat([newCoordinate]),
-                distanceTravelled:
-                  distanceTravelled + this.calcDistance(newCoordinate),
-                prevLatLng: newCoordinate
-              });
-            },
-            error => console.log(error),
-            { enableHighAccuracy: true, timeout: 20000, maximumAge: 1000 }
-          );   
-
-
-
+    componentDidMount(){
+       
     }
-
-    
-
-  componentWillUnmount() {
-
-    navigator.geolocation.clearWatch(this.watchID);
-  }
-
-
-    getCurrentLocation = () => {
-        navigator.geolocation.getCurrentPosition(
-            (position) => {
-                let currentUserPosition = position.coords;
-                alert(JSON.stringify(currentUserPosition));
-                this.setState({
-                    latitude: position.coords.latitude,
-                    longitude: position.coords.longitude,
-                    error: null,
-                    loading: false
-                  });
-            },
-            (error) => {
-                alert("Error: " + error);
-            },
-            {
-                enableHighAccuracy: false,
-                timeout: 200,
-                maximumAge: 0,
-                distanceFilter: 10
-            }
-        );
-    }
-
-
-    // componentDidMount() {
-    //     this.setState({loading: true})
-    //     // // if (hasLocationPermission) {
-    //     //     Geolocation.getCurrentPosition(
-    //     //         (position) => {
-    //     //             alert("Position datas: " + position)
-    //     //             this.setState({loading: false})
-    //     //         },
-    //     //         (error) => {
-    //     //             // See error code charts below.
-    //     //             console.log(error.code, error.message);
-    //     //         },
-    //     //         { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
-    //     //     );
-    //     // }
-    //     alert('Before Data Fetch')
-    //     navigator.geolocation.getCurrentPosition(
-    //        (position) => {
-    //          console.log("wokeeey");
-    //          console.log(position);
-    //          alert("Position: ")
-    //          this.setState({
-    //            latitude: position.coords.latitude,
-    //            longitude: position.coords.longitude,
-    //            error: null,
-    //            loading: false
-    //          });
-    //        },
-    //        (error) => alert("Cannot get Location: " + error),
-    //        { enableHighAccuracy: false, timeout: 200000, maximumAge: 1000 },
-    //      );
-    //    }
-    
-
 
     render(){
-        const {latitude, longitude, loading} = this.state; 
-
+        
         return(
-            <View style={styles.containerProfile}>
+            <ScrollView>
+                  <View style={styles.containerProfile}>
+                    <View style={styles.chatNavBar}>
+                        <TouchableHighlight onPress={() => this.props.navigation.navigate('Activity')}>
+                            <Icon name="arrow-left" color="white" size={30}/>
+                        </TouchableHighlight>
+                        <Text style={{color: 'white', fontSize: 16, fontWeight: 'bold', left: 30}}>i
+                            <Text style={{color: 'white', fontSize: 20, textDecorationLine: 'underline',
+                                fontWeight: 'bold', paddingBottom: 10}}>No te aburras</Text>!
+                        </Text>
+                    </View>
+                    <View style={{padding: 10, marginRight: 5, backgroundColor: '#fff'}}>
+                        <TouchableHighlight>
+                            <Card>
+                                <CardItem cardBody bordered>
+                                    {
+                                        this.locationData.photos ? (
+                                            <Image 
+                                            source = {{uri: `${this.image_api}${this.locationData.photos[0].photo_reference}&key=${this.API_KEY}`}}
+                                            style={{width: width-50, height: 200}}
+                                            />
+                                        ) : (
+                                            <Image
+                                            source={require('../../../assets/images/kfc.jpg')}
+                                            style={{width: width-50, height: 150}}
+                                        />        
+                                        )
+                                    }
+                                </CardItem>
+                                <CardItem bordered>
+                                <Body>
+                                    <Text>{this.locationData.name}</Text>
+                                </Body>
+                                </CardItem>
+                            </Card>
+                        </TouchableHighlight>
+                        <Text style={{padding: 10}}>!Selecciona una pelicula e invita a alguien</Text>
 
-                <TouchableHighlight onPress={() => this.props.navigation.navigate('Activity')}>
-                    <Icon name="arrow-left" color="#202020" size={30}/>
-                </TouchableHighlight>
-                <Text>Latitude and Longitude SImulations:</Text>
-    
-                {
-                    loading ? (
-                        <View style={{padding: 60}}>
-                                      <Spinner color="red"/>
-                                  </View>
-                    ) : (
-                        <View style={{alignItems: 'center', justifyContent: 'center'}}>
-                            <Text>Latitude: {latitude}</Text>
-                            <Text>Longitude: {longitude}</Text>
-                        </View>
-         
-                    )
-                }
-            
-            </View>
+                        {/* <View style={{width: 120, height: 150}}>
+                            <ScrollView
+                                horizontal={true}
+                                pagingEnabled={true} // animates ScrollView to nearest multiple of it's own width
+                                showsHorizontalScrollIndicator={false}
+                                // the onScroll prop will pass a nativeEvent object to a function
+                                onScroll={Animated.event( // Animated.event returns a function that takes an array where the first element...
+                                [{ nativeEvent: { contentOffset: { x: this.scrollX } } }] // ... is an object that maps any nativeEvent prop to a variable
+                                )} // in this case we are mapping the value of nativeEvent.contentOffset.x to this.scrollX
+                                scrollEventThrottle={16} // this will ensure that this ScrollView's onScroll prop is called no faster than 16ms between each function call
+                                >
+                                {photos.map((source, i) => { // for every object in the photos array...
+                                return ( // ... we will return a square Image with the corresponding object as the source
+                                    <TouchableHighlight>
+                                        <ImageOverlay
+                                            key={i}
+                                            source={source}
+                                            style={{width: 100, height: 100}}
+                                            contentPosition='bottom'>
+
+                                            </ImageOverlay>  
+                                    </TouchableHighlight>
+                                );
+                                })}
+                            </ScrollView>
+                        </View> */}
+
+                    </View>
+                    {/* <View>
+                    <MapView
+                        provider={PROVIDER_GOOGLE}
+                        style={styles.map}
+                        initialRegion={{
+                            latitude: LATITUDE,
+                            longitude: LONGITUDE,
+                            latitudeDelta: LATITUDE_DELTA,
+                            longitudeDelta: LONGITUDE_DELTA,
+                        }}
+                        />        
+                    </View> */}
+                    
+                </View>  
+            </ScrollView>
         );
     }
 }
@@ -230,10 +172,13 @@ export default class Promotion extends Component{
 const styles = StyleSheet.create({
     containerProfile: {
         flex: 1,
-        backgroundColor: '#fff',
-        padding: 2,
-        margin: 10
+        backgroundColor: '#202020',
+        paddingBottom: 20
     },
+   chatNavBar: {
+    flexDirection: 'row',
+    height: 60,
+    marginTop: 10
+    }
 
-    
 });
