@@ -10,6 +10,8 @@ import {photos} from '../../../utils/assets'
 import Geolocation from 'react-native-geolocation-service';
 import { PermissionsAndroid } from 'react-native';
 
+import {getDistanceFromLatLonInKm} from '../../../utils/getDistance';
+
 import Permissions from 'react-native-permissions'
 import MapView, {
     ProviderPropType,
@@ -38,6 +40,7 @@ export default class Promotion extends Component{
             coordinate: new AnimatedRegion({
               latitude: LATITUDE,
               longitude: LONGITUDE,
+              distance: 0
             }),
           };   
 
@@ -47,7 +50,7 @@ export default class Promotion extends Component{
         this.currentUserLatitude = this.props.navigation.state.params.lat
         this.currentUserLongitude = this.props.navigation.state.params.lng
         this.image_api = this.props.navigation.state.params.image_api
-        this.API_KEY = 'AIzaSyAizovCeZayRAZthl91it19QYFw1UF3-Jk' 
+        this.API_KEY = 'AIzaSyAizovCeZayRAZthl91it19QYFw1UF3-Jk'
     }
 
     animate() {
@@ -66,6 +69,18 @@ export default class Promotion extends Component{
         }
       }
 
+    getDistance = () => {
+        
+        const lat1 = this.currentUserLatitude
+        const lon1 = this.currentUserLongitude
+        const lat2 = this.locationData.geometry.location.lat
+        const lon2 = this.locationData.geometry.location.lng
+        let distanceInBetween = getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2)
+        distanceInBetween = distanceInBetween.toFixed(2)
+        this.setState({distance: distanceInBetween})
+
+    }
+
     getInitialState() {
         return {
           region: {
@@ -78,7 +93,7 @@ export default class Promotion extends Component{
     }
 
     componentDidMount(){
-       
+        this.getDistance()
     }
 
     render(){
@@ -87,7 +102,7 @@ export default class Promotion extends Component{
             <ScrollView>
                   <View style={styles.containerProfile}>
                     <View style={styles.chatNavBar}>
-                        <TouchableHighlight onPress={() => this.props.navigation.navigate('Activity')}>
+                        <TouchableHighlight onPress={() => this.props.navigation.navigate('Invitation', {actName: this.actName})}>
                             <Icon name="arrow-left" color="white" size={30}/>
                         </TouchableHighlight>
                         <Text style={{color: 'white', fontSize: 16, fontWeight: 'bold', left: 30}}>i
@@ -115,7 +130,20 @@ export default class Promotion extends Component{
                                 </CardItem>
                                 <CardItem bordered>
                                 <Body>
-                                    <Text>{this.locationData.name}</Text>
+                                    <Text style={{fontSize: 18}}>{this.locationData.name}</Text>
+                                    <View style={{flexDirection: 'row', marginTop: 8}}> 
+                                        <Image
+                                            source={require('../../../assets/images/pin.png')}
+                                            style={{width: 25, height: 25}}
+                                            />
+                                        {   this.state.distance < 1000 ? (   
+                                                <Text style={{fontSize: 18}}>{this.state.distance} m </Text>
+                                            ) :
+                                            (   
+                                                <Text style={{fontSize: 18}}>{(this.state.distance)/1000} km </Text>
+                                            )
+                                        }
+                                    </View>
                                 </Body>
                                 </CardItem>
                             </Card>

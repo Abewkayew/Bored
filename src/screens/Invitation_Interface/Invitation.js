@@ -31,10 +31,8 @@ export default class Invitation extends Component{
         latitude: 0.0,
         longitude: 0.0,
         }
-    this.actName = this.props.navigation.state.params.actName
-    this.handlePromotionClick = this.handlePromotionClick.bind(this);
- 
-    
+        this.actName = this.props.navigation.state.params.actName
+        this.handlePromotionClick = this.handlePromotionClick.bind(this);
    }
 
    getNearbyLocations = (url) => {
@@ -59,6 +57,7 @@ export default class Invitation extends Component{
     const customPhotoPath = Firebase.database().ref().child('custom_photos');
     customPhotoPath.on('value', (dataSnapshot) => {
             var photoDatas = [];
+            
             dataSnapshot.forEach((child) => {
                 photoDatas.push({
                     photo: child.val().photo,
@@ -78,6 +77,10 @@ export default class Invitation extends Component{
    handlePromotionClick(activityName, result, lat, lng, image_api){
        this.props.navigation.navigate("Promotion",{activityName: activityName, result: result, lat: lat, lng: lng, image_api, image_api})
    }
+
+   shouldComponentUpdate(nextProps, nextState){
+        return nextProps.locationData != this.state.locationData
+    }
 
 
     componentDidMount() {
@@ -235,21 +238,21 @@ export default class Invitation extends Component{
                    <ScrollView>
                     <View style={styles.tabViewStyle}>
                                 <TouchableHighlight>
-                                    <Button  onPress={() => this.props.navigation.navigate('People', {activityName: 'Drink'})} 
+                                    <Button  onPress={() => this.props.navigation.navigate('People', {activityName: this.actName})} 
                                             bordered light style={{width: 150, justifyContent: 'center'}}>
                                         <Text style={{color: 'white'}}>personas</Text>
                                     </Button>
                                 </TouchableHighlight>
                                 <TouchableHighlight>
-                                    <Button  onPress={() => this.props.navigation.navigate('Invitation', {actName: this.state.actName})}
-                                            bordered light style={{width: 150, justifyContent: 'center'}}>
+                                    <Button bordered light style={{width: 150, justifyContent: 'center'}}>
                                         <Text style={{color: 'white'}}>invitaciones</Text>
                                     </Button>
                                 </TouchableHighlight>
                         </View>
                     {
                             this.state.locationData.length === 0 ? (
-                                <View style={{justifyContent: 'center'}}>
+                                <View style={{justifyContent: 'center', padding: 60}}>
+                                    <Text style={{color: 'red', fontSize: 22}}>Loading invitaciones</Text>
                                     <Spinner color="red"/>
                                 </View>
                             ): (
@@ -283,7 +286,7 @@ export default class Invitation extends Component{
                                               <Text style={{marginTop: 5, fontSize: 20}}>{result.name}</Text>
                                               {/* <Text>Photo References: {result.photos.photo_reference}</Text> */}
                                               <Text>{result.vicinity}</Text> 
-                                              
+
                                         </View>
                                     )
                                 })

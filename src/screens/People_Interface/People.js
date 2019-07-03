@@ -20,83 +20,82 @@ export default class People extends Component{
         this.state = {
             loading: false,
             people: [],
-            actName: ''
-        }
-
-
+            peopleLength: 0,
+            photos: []
+         }
+         this.actName = this.props.navigation.state.params.activityName 
+        
       }
+    
+    shouldComponentUpdate(nextProps, nextState){
+        return nextProps.people != this.state.people
+    }
 
     componentDidMount() {
-        const actName = this.props.navigation.state.params.activityName 
-
-        const activityDatabaseReference = Firebase.database().ref().child('activities/' + actName + '/users');
-        
-        this.setState({loading: true, actName: actName})
-
+        const activityDatabaseReference = Firebase.database().ref().child('activities/' + this.actName + '/users');
+        // start listening to Firebase Database
+        this.setState({loading: true})
+        const that = this;
         activityDatabaseReference.on('value', (snapshot) => {
-            let data = snapshot.val();
-            if(data){                    
-                let peopleData = Object.values(data)
-                let peopleKey = Object.keys(data)
-                
-                this.setState({
-                    people: peopleKey,
+
+            let peoples = [];
+            snapshot.forEach(data => {
+                let person = {
+                    id: data.key
+                }
+                peoples.push(person);
+                that.setState({peopleLength: peoples.length})
+                that.displayPeopleData(peoples)
+            // let data = snapshot.val();
+            // if(data){                    
+            //     let peopleData = Object.values(data)
+            //     let peopleKey = Object.keys(data)
+            // }
+         });
+         
+    })
+   }
+
+    displayPeopleData = (peopleKeys) => {
+        let that = this;
+        const userDatabaseReference = Firebase.database().ref().child('users');
+        
+        
+        // alert("Original datas are: ", peopleKeys)
+        const peopleArray = []
+        peopleKeys.map((dataKey, index) => {
+            // alert("People length" + )
+            
+            userDatabaseReference.child(dataKey.id).on("value", (snapShot) => {
+                let data = snapShot.val()
+                let personObject = {
+                    nombre: data.nombre,
+                    phone: data.phone,
+                    profileImageUrl: data.profileImageUrl
+                }
+
+                peopleArray.push(personObject)
+              
+                }
+              )
+               // alert("PersonKeys are: ", personKey)
+             if(peopleArray.length === this.state.peopleLength){
+                that.setState({
+                    people: peopleArray,
                     loading: false
                 })
-            }
-         });
-
-         this.displayPeopleData()
-    }
-
-    displayPeopleData = () => {
-        const userDatabaseReference = Firebase.database().ref().child('users');
-        const peopleKey = this.state.people
-        console.log("PeopleKey is: ", peopleKey)
-        peopleKey.map(dataKey => {
-            alert("Data Key: " + dataKey)
-            userDatabaseReference.child(dataKey).once("value").then(data => {
-                let personKey = Object.keys(data)
-                //  this.setState({
-                //      people: personKey,
-                //      loading: false
-                //  })
-                })
+             }
                 
-              
-        })        
-        // this.state.loading ? (alert('Loading...')) : (
-        //     this.state.people.map((peopleKey, index) => {
-        //         alert('People: ' + peopleKey.nombre + ' Index: ' + index)
-        //     })
-        // )
-    }
 
+
+
+                
+        })  
+    }
 
     render(){
         // position will be a value between 0 and photos.length - 1 assuming you don't scroll pass the ends of the ScrollView
         let position = Animated.divide(this.scrollX, width);
-        const people = this.state.people
-        
-        // const loadPeopleData = this.state.loading ? (
-        //             <Spinner color="red"/>
-        //                 ) : (
-        //                     <View>
-        //                         {
-        //                             this.state.people.map((peopleData, index) => {
-        //                                 <Text style={{color: 'white', backgroundColor: 'red'}}>
-        //                                     {
-        //                                         peopleData.nombre
-        //                                     }            
-        //                                 </Text>           
-        //                             })
-        //                         }
-        //                     </View>    
-        //             )
-
-        
-        const {actName} = this.state.actName
-
         return(
             <View style={styles.containerPeople}>
                 
@@ -115,14 +114,14 @@ export default class People extends Component{
                     <ScrollView>
                         <View style={styles.tabViewStyle}>
                             <TouchableHighlight>
-                                <Button  onPress={() => this.props.navigation.navigate('People', {activityName: 'Drink'})} 
+                                <Button  onPress={() => this.props.navigation.navigate('People', {actName: this.actName})} 
                                         bordered light style={{width: 150, justifyContent: 'center'}}>
                                     <Text style={{color: 'white'}}>personas</Text>
                                 </Button>
                             </TouchableHighlight>
 
                             <TouchableHighlight>
-                                <Button  onPress={() => this.props.navigation.navigate('Invitation', {actName: this.state.actName})}
+                                <Button  onPress={() => this.props.navigation.navigate('Invitation', {actName: this.actName})}
                                         bordered light style={{width: 150, justifyContent: 'center'}}>
                                     <Text style={{color: 'white'}}>invitaciones</Text>
                                 </Button>
@@ -136,63 +135,29 @@ export default class People extends Component{
                         {
                               this.state.loading ? (
                                   <View style={{padding: 60}}>
+                                      <Text style={{color: 'red', fontSize: 22}}>Loading People</Text>
                                       <Spinner color="red"/>
                                   </View>
 
                               ) : (
-                                people.map((data, index) => {
+                                this.state.people.map((data, index) => {
                                     return(
-                                        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', marginTop: 20, backgroundColor: '#fff'}}>
-                                    <View
-                                    // this will bound the size of the ScrollView to be a square because
-                                    // by default, it will expand regardless if it has a flex value or not
-                                    style={{ width, height: width}}
-                                    >
-                                        <Text style={{color: 'white', backgroundColor: 'green'}}>{data.phone}</Text>
-                                    
-                                    <ScrollView
-                                        horizontal={true}
-                                        pagingEnabled={true} // animates ScrollView to nearest multiple of it's own width
-                                        showsHorizontalScrollIndicator={false}
-                                        // the onScroll prop will pass a nativeEvent object to a function
-                                        onScroll={Animated.event( // Animated.event returns a function that takes an array where the first element...
-                                        [{ nativeEvent: { contentOffset: { x: this.scrollX } } }] // ... is an object that maps any nativeEvent prop to a variable
-                                        )} // in this case we are mapping the value of nativeEvent.contentOffset.x to this.scrollX
-                                        scrollEventThrottle={16} // this will ensure that this ScrollView's onScroll prop is called no faster than 16ms between each function call
-                                        >
-                                        {photos.map((source, i) => { // for every object in the photos array...
-                                        return ( // ... we will return a square Image with the corresponding object as the source
-                                          <TouchableHighlight onPress={() => this.props.navigation.navigate('Profile')}>
-                                                <ImageOverlay
-                                                    key={i}
-                                                    source={source}
-                                                    style={{width, height: width}}
-                                                    overlay='cyan'
-                                                    contentPosition='bottom'>
-                                                        {/* <TouchableHighlight onPress={() => alert('Message works')}> */}
-                                                        <View style={{justifyContent: 'center', alignItems: 'center'}}>
-                                                            <Button rounded bordered onPress={() => this.props.navigation.navigate('SingleChat')}
-                                                                style={{width: 50,backgroundColor: '#fff',
-                                                                    height: 50, justifyContent: 'center', borderColor: 'green'}}>
-                                                                <Image source={require('../../../assets/images/messages.png')} style={{width: 30, height: 30}}/>
-                                                            </Button>
-                                                        </View>
-                                                              
-                                                        {/* </TouchableHighlight> */}
-                                                 </ImageOverlay>  
-                                           </TouchableHighlight>
-                                        );
-                                        })}
-                                    </ScrollView>
-                                    <View style={{flexDirection: 'row', justifyContent: 'center', marginTop: 5}}>
-                                                <Text style={{fontSize: 20, fontWeight:'bold'}}>Daniela, 27</Text>
-                                                <Image source={require('../../../assets/images/camera_1.png')} 
-                                                  style={{width: 30, height: 30, marginLeft: 60}}/>
-                                                <Text style={{fontSize: 20, fontWeight: 'bold', marginLeft: 5}}>3</Text>
+                                        <View>
+                                           <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', marginTop: 20, backgroundColor: '#fff'}}>
+                                                <TouchableHighlight onPress={() => this.props.navigation.navigate('Profile', {actName: this.actName})}>
+                                                    <Image
+                                                        source={{uri: `${data.profileImageUrl}`}}
+                                                        style={{width: width, height: 300}}
+                                                        />
+                                                </TouchableHighlight>
+                                                <View style={{flexDirection: 'row', justifyContent: 'center', marginTop: 5}}>
+                                                    <Text style={{fontSize: 20, fontWeight:'bold'}}>{data.nombre}, 27</Text>
+                                                    <Image source={require('../../../assets/images/camera_1.png')} 
+                                                        style={{width: 30, height: 30, marginLeft: 60}}/>
+                                                    <Text style={{fontSize: 20, fontWeight: 'bold', marginLeft: 5}}>3</Text>
+                                                </View>                                    
                                             </View>
-                                    </View>
-                                    
-                            </View>
+                                        </View>
                                 
                                     )
                                 }

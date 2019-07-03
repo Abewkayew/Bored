@@ -8,16 +8,21 @@ const { width } = Dimensions.get('window');
 
 
 export default class SingleChat extends Component{
-    
+    constructor(props){
+        super(props)
+        this.actName = this.props.navigation.state.params.actName 
+    }
+   
+
     render(){
     
         return(
             <View style={styles.containerSingleChat}>
                     <View style={styles.singleChatNavBar}>
-                        <TouchableHighlight onPress={() => this.props.navigation.navigate('People')}>
+                        <TouchableHighlight onPress={() => this.props.navigation.navigate('People', {activityName: this.actName})}>
                             <Icon name="arrow-left" color="white" size={30}/>
                         </TouchableHighlight>
-                        <TouchableHighlight onPress={() => this.props.navigation.navigate('Profile')}>
+                        <TouchableHighlight onPress={() => this.props.navigation.navigate('Profile', {actName: this.actName})}>
                             <Image source={{uri: 'https://randomuser.me/api/portraits/women/88.jpg'}}
                                    style={{width: 50, height: 50, borderRadius: 80/ 2, left: 20}}/>
                         </TouchableHighlight>

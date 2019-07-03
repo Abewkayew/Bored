@@ -11,6 +11,12 @@ const { width } = Dimensions.get('window');
 
 
 export default class Profile extends Component{
+    constructor(props){
+        super(props)
+        this.actName = this.props.navigation.state.params.actName 
+    }
+    
+    
     scrollX = new Animated.Value(0) // this will be the scroll location of our ScrollView
 
     render(){
@@ -20,7 +26,7 @@ export default class Profile extends Component{
         return(
             <View style={styles.containerProfile}>
                 
-                <TouchableHighlight onPress={() => this.props.navigation.navigate('People')}>
+                <TouchableHighlight onPress={() => this.props.navigation.navigate('People', {activityName: this.actName})}>
                     <Icon name="arrow-left" color="#202020" size={30}/>
                 </TouchableHighlight>
 
@@ -42,42 +48,46 @@ export default class Profile extends Component{
                                     >
                                     {photos.map((source, i) => { // for every object in the photos array...
                                     return ( // ... we will return a square Image with the corresponding object as the source
-                                        <ImageOverlay
-                                        key={i}
-                                        source={source}
-                                        style={{width: width - 10, height: width}}
-                                        contentPosition='bottom'
-                                        overlayColor="cyan"
-                                        overlayAlpha={0.2}
-                                        >
-                                            <View style={{flexDirection: 'row', marginLeft: 50}}>
-                                                {/* Display the dots for the profile Images  */}
-                                                {photos.map((_, i) => { // the _ just means we won't use that parameter
-                                                 let opacity = position.interpolate({
-                                                    inputRange: [i - 1, i, i + 1], // each dot will need to have an opacity of 1 when position is equal to their index (i)
-                                                    outputRange: [0.3, 1, 0.3], // when position is not i, the opacity of the dot will animate to 0.3
-                                                    // inputRange: [i - 0.50000000001, i - 0.5, i, i + 0.5, i + 0.50000000001], // only when position is ever so slightly more than +/- 0.5 of a dot's index
-                                                    // outputRange: [0.3, 1, 1, 1, 0.3], // is when the opacity changes from 1 to 0.3
-                                                    extrapolate: 'clamp' // this will prevent the opacity of the dots from going outside of the outputRange (i.e. opacity will not be less than 0.3)
-                                                  });
+                                        <TouchableHighlight>
+                                            <ImageOverlay
+                                                key={i}
+                                                source={source}
+                                                style={{width: width - 10, height: width}}
+                                                contentPosition='bottom'
+                                                overlayColor="cyan"
+                                                overlayAlpha={0.2}
+                                                >
+                                                    <View style={{flexDirection: 'row', marginLeft: 50}}>
+                                                        {/* Display the dots for the profile Images  */}
+                                                        {photos.map((_, i) => { // the _ just means we won't use that parameter
+                                                        let opacity = position.interpolate({
+                                                            inputRange: [i - 1, i, i + 1], // each dot will need to have an opacity of 1 when position is equal to their index (i)
+                                                            outputRange: [0.3, 1, 0.3], // when position is not i, the opacity of the dot will animate to 0.3
+                                                            // inputRange: [i - 0.50000000001, i - 0.5, i, i + 0.5, i + 0.50000000001], // only when position is ever so slightly more than +/- 0.5 of a dot's index
+                                                            // outputRange: [0.3, 1, 1, 1, 0.3], // is when the opacity changes from 1 to 0.3
+                                                            extrapolate: 'clamp' // this will prevent the opacity of the dots from going outside of the outputRange (i.e. opacity will not be less than 0.3)
+                                                        });
 
-                                                    return (
-                                                        <Animated.View // we will animate the opacity of the dots later, so use Animated.View instead of View here
-                                                        key={i} // we will use i for the key because no two (or more) elements in an array will have the same index
-                                                        style={{ opacity, height: 15, width: 15, backgroundColor: '#202020', margin: 8, 
-                                                        borderRadius: 10, marginTop: 25}}
-                                                        />
-                                                    );
-                                                    })}
+                                                            return (
+                                                                <Animated.View // we will animate the opacity of the dots later, so use Animated.View instead of View here
+                                                                key={i} // we will use i for the key because no two (or more) elements in an array will have the same index
+                                                                style={{ opacity, height: 15, width: 15, backgroundColor: '#202020', margin: 8, 
+                                                                borderRadius: 10, marginTop: 25}}
+                                                                />
+                                                            );
+                                                            })}
 
-                                                <Button rounded bordered
-                                                    style={{width: 50,backgroundColor: 'white',
-                                                        height: 50, justifyContent: 'center', borderColor: 'green', marginLeft: 10,
-                                                        marginRight: 10}}>
-                                                    <Image source={require('../../../assets/images/messages.png')} style={{width: 30, height: 30}}/>
-                                                </Button>     
-                                            </View>
-                                    </ImageOverlay>  
+                                                        <Button rounded bordered
+                                                            style={{width: 50,backgroundColor: 'white',
+                                                                height: 50, justifyContent: 'center', borderColor: 'green', marginLeft: 10,
+                                                                marginRight: 10}}>
+                                                            <TouchableHighlight onPress={() => this.props.navigation.navigate('SingleChat', {actName: this.actName})}>
+                                                                <Image source={require('../../../assets/images/messages.png')} style={{width: 30, height: 30}}/>
+                                                            </TouchableHighlight>
+                                                        </Button>     
+                                                    </View>
+                                            </ImageOverlay> 
+                                        </TouchableHighlight> 
                                     );
                                     })}
                                 </ScrollView>

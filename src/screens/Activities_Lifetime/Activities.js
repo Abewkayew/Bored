@@ -2,25 +2,20 @@ import React, {Component} from 'react';
 import {StyleSheet, View, Text, Image, ScrollView, TouchableHighlight}  from 'react-native';
 import { Container, Header, Content, Card, CardItem, Thumbnail, Button, Left, Body, Right } from 'native-base';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-// import { TouchableHighlight } from 'react-native-gesture-handler';
-
 import moment from "moment";
-
-// import ActivityChooser from './ActivityChooser';
-
 import Firebase from '../../../utils/Config';
 
 export default class Activities extends Component{
 
     constructor(props){
         super(props);
-        this.state = { currentCount: 3600, currentUser: null, currentTime: moment(), endTime: moment().add(60, 'seconds'), 
+        this.state = { currentCount: 3600, currentUser: null, currentTime: moment(), endTime: moment().add(180, 'seconds'), 
                        timeRemaining: 36000, activityName: '', loading: true,
                        gameCount: 0, drinkCount: 0, playCount: 0, theatreCount: 0, coffeeCount: 0, foodCount: 0, 
                        countActivity: 0
                     }
-                   
         this.handleActivityClick = this.handleActivityClick.bind(this);
+
     }
 
 
@@ -32,20 +27,7 @@ export default class Activities extends Component{
     insertData = (actName) => {
         
         const {currentCount, currentUser, currentTime, endTime, timeRemaining, activityName, countActivity} = this.state;
-
-        // const activityName = 'Game';
         const newActivity = Firebase.database().ref().child('activities/' + actName + '/users/' + currentUser.uid);
-        
-        // newActivity.on('value', snapShoot => {
-        //     const countAct = snapShoot.numChildren()
-        //     alert('Count: ' + countAct)
-        //     if(countAct < 3 ){
-
-        //         //Insert the activity data to Firebase.
-                
-
-        //         }
-        // }) 
 
         const activityData = {
             startTime: moment().toString(),
@@ -55,23 +37,15 @@ export default class Activities extends Component{
 
         newActivity.set(activityData).then(data => {
             this.setState({loading: false, timeRemaining: timeRemaining - 10000, countActivity: countActivity + 1})
-            // this.setState((prevState, props) => ({timeRemaining: prevState.counter = props.step})
-            // alert("Timer value is: " + timeRemaining);
-        });
+         }).catch(error => {
+            alert("Error happened: ", error)
+        })
         
         if(endTime.diff(moment()) < 0) { 
         newActivity.remove();
         clearInterval(this.intervalId);
         alert("Time for " + actName + " is Over");
         }
-
-        // this.setState({
-        //     timeRemaining: endTime.diff(currentTime)
-        // });
-
-        
-        
-        // this.props.navigation.navigate('People')
         
     }
 
@@ -84,14 +58,12 @@ export default class Activities extends Component{
         // if(endTime.diff(moment()) < 0){
         //     clearInterval(this.intervalId);
         // }
-        
-        this.props.navigation.navigate('People', {activityName: actName})
         this.intervalId = setInterval(() => {
             this.insertData(actName)
         }, 1000);    
 
-       
-        // this.insertData(actName);
+        this.props.navigation.navigate('People', {activityName: actName})
+
 
     }
 
@@ -103,24 +75,6 @@ export default class Activities extends Component{
 
     }
 
-    // componentWillMount(){
-        
-    //     const {currentUser, activityName, loading} = this.state;
-
-    //     const {startTime} = moment();
-    //     const {endTime} = moment().add(3600, 'seconds');
-    //     this.setState({
-    //         currentUser: currentUser.uid,
-    //         startTime: startTime,
-    //         endTime: endTime
-    //     });
-        
-
-    // }
-
-    // componentWillUnmount(){
-    //     clearInterval(this.intervalId);
-    // }  
 
     componentDidMount(){
         // this.handleActivityClick();
@@ -135,6 +89,7 @@ export default class Activities extends Component{
     }
 
     countTotalUsers = () => {
+        
         const activityNames = {
             game: 'game',
             drink: 'bar',
@@ -150,8 +105,7 @@ export default class Activities extends Component{
         const totalPlayUsers = Firebase.database().ref().child('activities/' + activityNames.play + '/users');
         const totalFoodUsers = Firebase.database().ref().child('activities/' + activityNames.food + '/users');
         const totalCoffeeUsers = Firebase.database().ref().child('activities/' + activityNames.coffee + '/users');
-
-        const countData = 0;
+        
         totalGameUsers.on('value', snapShot => {
             const countTotal = snapShot.numChildren()
             this.setState({
@@ -206,8 +160,8 @@ export default class Activities extends Component{
 
 
     render(){
+        
         const {currentCount, currentUser, activityName, loading} = this.state;
-       
 
         return(
             <View style={styles.container}>
