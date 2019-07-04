@@ -6,7 +6,6 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 import Permissions from 'react-native-permissions'
 import axios from 'axios';
-import Geolocation from 'react-native-geolocation-service';
 
 import Firebase from '../../../utils/Config';
 

@@ -7,10 +7,12 @@ import ImageOverlay from "react-native-image-overlay";
 
 import {photos} from '../../../utils/assets'
 
-import Geolocation from 'react-native-geolocation-service';
 import { PermissionsAndroid } from 'react-native';
 
 import {getDistanceFromLatLonInKm} from '../../../utils/getDistance';
+
+import Polyline from '@mapbox/polyline'
+
 
 import Permissions from 'react-native-permissions'
 import MapView, {
@@ -21,43 +23,52 @@ import MapView, {
   } from 'react-native-maps';
 
 
-
-  const screen = Dimensions.get('window');
-
-const ASPECT_RATIO = screen.width / screen.height;
-const LATITUDE = 37.78825;
-const LONGITUDE = -122.4324;
-const LATITUDE_DELTA = 0.0922;
-const LONGITUDE_DELTA = LATITUDE_DELTA * ASPECT_RATIO;
-
 const { width } = Dimensions.get('window');
 
 export default class Promotion extends Component{
     constructor(props){
         super(props)
 
-        this.state = {
-            coordinate: new AnimatedRegion({
-              latitude: LATITUDE,
-              longitude: LONGITUDE,
-              distance: 0
-            }),
-          };   
-
-
+        this.screen = Dimensions.get('window');
+        this.ASPECT_RATIO = this.screen.width / this.screen.height;
+        this.LATITUDE_DELTA = 0.0922;
+        this.LONGITUDE_DELTA = this.LATITUDE_DELTA * this.ASPECT_RATIO;
+            
         this.actName = this.props.navigation.state.params.activityName
         this.locationData = this.props.navigation.state.params.result
         this.currentUserLatitude = this.props.navigation.state.params.lat
         this.currentUserLongitude = this.props.navigation.state.params.lng
         this.image_api = this.props.navigation.state.params.image_api
         this.API_KEY = 'AIzaSyAizovCeZayRAZthl91it19QYFw1UF3-Jk'
+
+        this.latitude = this.locationData.geometry.location.lat
+        this.longitude = this.locationData.geometry.location.lng
+
+        this.state = {
+            coordinate: new AnimatedRegion({
+              latitude: this.latitude,
+              longitude: this.longitude,
+              distance: 0,
+              coords: [],
+              x: 'false'
+            }),
+          }; 
+
+        this.locationTest = [
+            {latitude: this.latitude, longitude: this.longitude},
+            {latitude: this.latitude, longitude: this.longitude}
+        ]  
+        this.coord = {
+            latitude: this.latitude,
+            longitude: this.longitude
+        }
     }
 
     animate() {
         const { coordinate } = this.state;
         const newCoordinate = {
-          latitude: LATITUDE + (Math.random() - 0.5) * (LATITUDE_DELTA / 2),
-          longitude: LONGITUDE + (Math.random() - 0.5) * (LONGITUDE_DELTA / 2),
+          latitude: this.latitude + (Math.random() - 0.5) * (this.LATITUDE_DELTA / 2),
+          longitude: this.longitude + (Math.random() - 0.5) * (this.LONGITUDE_DELTA / 2),
         };
     
         if (Platform.OS === 'android') {
@@ -92,12 +103,57 @@ export default class Promotion extends Component{
         };
     }
 
+    async getDirections(startLoc, destinationLoc) {
+
+        try {
+            let resp = await fetch(`https://maps.googleapis.com/maps/api/directions/json?origin=${ startLoc }&destination=${ destinationLoc }&key=${this.API_KEY}`)
+            let respJson = await resp.json();
+            let points = Polyline.decode(respJson.routes[0].overview_polyline.points);
+            let coords = points.map((point, index) => {
+                return  {
+                    latitude : point[0],
+                    longitude : point[1]
+                }
+            })
+            this.setState({coords: coords})
+            return coords
+        } catch(error) {
+            alert(error)
+            return error
+        }
+    }
+
+    mergeLot(){
+        if (this.latitude != null && this.longitude!=null)
+         {
+           let concatLot = this.latitude +","+this.longitude
+           let concatLot1 = this.currentUserLatitude +","+this.currentUserLongitude
+
+           this.setState({
+             concat: concatLot,
+             concat1: concatLot1
+           }, () => {
+             this.getDirections(concatLot, concatLot1);
+           });
+         }
+    
+       }
+
+
     componentDidMount(){
         this.getDistance()
+        this.mergeLot()
     }
 
     render(){
         
+        const markers = [];
+        if (this.locationData) {
+            for(var i of this.locationTest) {
+                markers.push(i);
+            }
+        }
+
         return(
             <ScrollView>
                   <View style={styles.containerProfile}>
@@ -177,20 +233,57 @@ export default class Promotion extends Component{
                             </ScrollView>
                         </View> */}
 
-                    </View>
-                    {/* <View>
-                    <MapView
-                        provider={PROVIDER_GOOGLE}
-                        style={styles.map}
-                        initialRegion={{
-                            latitude: LATITUDE,
-                            longitude: LONGITUDE,
-                            latitudeDelta: LATITUDE_DELTA,
-                            longitudeDelta: LONGITUDE_DELTA,
-                        }}
-                        />        
-                    </View> */}
-                    
+
+
+                        <MapView
+                            provider={PROVIDER_GOOGLE}                            
+                            zoomEnabled={true}
+                            minZoomLevel ={0}
+                            showUserLocation
+                            followUserLocation
+                            pitchEnabled={true}
+                            showsCompass={true}
+                            showsBuildings={true}
+                            showsIndoors={true}
+                            style={{width: width-30, padding: 10, marginRight: 5, height: 300}}
+                            initialRegion={{
+                                latitude: this.latitude,
+                                longitude: this.longitude,
+                                latitudeDelta: this.LATITUDE_DELTA,
+                                longitudeDelta: this.LONGITUDE_DELTA,
+                            }}
+                         >
+                            {!!this.latitude && !!this.longitude && <MapView.Marker
+                                    coordinate={{"latitude":this.latitude,"longitude":this.longitude}}
+                                    title={this.locationData.name}
+                                />
+                            }
+
+                            {!!this.currentUserLatitude && !!this.currentUserLongitude && <MapView.Marker
+                            coordinate={{"latitude":this.currentUserLatitude,"longitude":this.currentUserLongitude}}
+                            title={"Your Position"}
+                            />}   
+
+
+
+                           {!!this.latitude && !!this.longitude && this.state.x == 'true' && 
+                                <MapView.Polyline
+                                    coordinates={this.state.coords}
+                                    strokeWidth={2}
+                                    strokeColor="red"
+                                />
+                            }
+                            <MapView.Polyline
+                                coordinates={[
+                                    {latitude: this.currentUserLatitude, longitude: this.currentUserLongitude},
+                                    {latitude: this.latitude, longitude: this.longitude},
+                                ]}
+                                strokeWidth={2}
+                                strokeColor="red"/>
+                            
+                        </MapView>        
+
+                    </View>                    
                 </View>  
             </ScrollView>
         );
@@ -207,6 +300,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     height: 60,
     marginTop: 10
+    },
+    map: {
+        width: 300,
+        height: 200
     }
-
 });

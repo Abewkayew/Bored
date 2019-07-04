@@ -154,13 +154,10 @@ dependencies {
     implementation project(':react-native-fetch-blob')
     implementation project(':react-native-image-crop-picker')
     implementation project(':react-native-vector-icons')
-    implementation project(':react-native-geolocation-service')
     implementation fileTree(dir: "libs", include: ["*.jar"])
     implementation "com.android.support:appcompat-v7:${rootProject.ext.supportLibVersion}"
     implementation "com.facebook.react:react-native:+"  // From node_modules
-    implementation(project(':react-native-geolocation-service')) {
-        exclude group: 'com.google.android.gms', module: 'play-services-location'
-    }
+
     implementation 'com.google.android.gms:play-services-location:12.0.0'
 }
 

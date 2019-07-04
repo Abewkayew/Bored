@@ -13,7 +13,6 @@ import com.facebook.react.ReactNativeHost;
 import com.facebook.react.ReactPackage;
 import com.facebook.react.shell.MainReactPackage;
 import com.facebook.soloader.SoLoader;
-import com.agontuk.RNFusedLocation.RNFusedLocationPackage;
 
 
 import java.util.Arrays;
@@ -36,8 +35,7 @@ public class MainApplication extends Application implements ReactApplication {
             new ImagePickerPackage(),
             new RNFetchBlobPackage(),
             new PickerPackage(),
-            new VectorIconsPackage(),
-            new RNFusedLocationPackage()
+            new VectorIconsPackage()
       );
     }
 

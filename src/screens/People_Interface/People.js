@@ -8,8 +8,6 @@ import Firebase from '../../../utils/Config';
 import ImageOverlay from "react-native-image-overlay";
 import {photos} from '../../../utils/assets';
 
-import Geolocation from 'react-native-geolocation-service';
-
 const { width } = Dimensions.get('window');
 
 export default class People extends Component{
