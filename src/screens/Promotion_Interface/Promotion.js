@@ -104,7 +104,6 @@ export default class Promotion extends Component{
     }
 
     async getDirections(startLoc, destinationLoc) {
-
         try {
             let resp = await fetch(`https://maps.googleapis.com/maps/api/directions/json?origin=${ startLoc }&destination=${ destinationLoc }&key=${this.API_KEY}`)
             let respJson = await resp.json();
@@ -235,7 +234,7 @@ export default class Promotion extends Component{
 
 
 
-                        <MapView
+                        <MapView.Animated
                             provider={PROVIDER_GOOGLE}                            
                             zoomEnabled={true}
                             minZoomLevel ={0}
@@ -261,10 +260,8 @@ export default class Promotion extends Component{
 
                             {!!this.currentUserLatitude && !!this.currentUserLongitude && <MapView.Marker
                             coordinate={{"latitude":this.currentUserLatitude,"longitude":this.currentUserLongitude}}
-                            title={"Your Position"}
+                            title={"Your Position"} image={require('../../../assets/images/icons8-marker-100.png')}
                             />}   
-
-
 
                            {!!this.latitude && !!this.longitude && this.state.x == 'true' && 
                                 <MapView.Polyline
@@ -279,9 +276,9 @@ export default class Promotion extends Component{
                                     {latitude: this.latitude, longitude: this.longitude},
                                 ]}
                                 strokeWidth={2}
-                                strokeColor="red"/>
+                                strokeColor="black"/>
                             
-                        </MapView>        
+                        </MapView.Animated>        
 
                     </View>                    
                 </View>  

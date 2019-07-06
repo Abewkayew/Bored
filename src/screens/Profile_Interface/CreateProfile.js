@@ -7,6 +7,8 @@ import RadioForm, {RadioButton, RadioButtonInput, RadioButtonLabel} from 'react-
 
 import Firebase from '../../../utils/Config';
 
+import Permissions from 'react-native-permissions'
+
             
 import Icon from 'react-native-vector-icons/MaterialIcons';
 // import RNFetchBlob from 'react-native-fetch-blob';
@@ -88,6 +90,7 @@ export default class CreateProfile extends Component{
     }
 
     componentDidMount(){
+        this._requestPermission()
         const {currentUser} = Firebase.auth();
 
         this.setState(
@@ -98,6 +101,20 @@ export default class CreateProfile extends Component{
     }
 
 
+    _requestPermission = () => {
+        Permissions.request('location').then(response => {
+          // Returns once the user has chosen to 'allow' or to 'not allow' access
+          // Response is one of: 'authorized', 'denied', 'restricted', or 'undetermined'
+          this.setState({ photoPermission: response })
+          if(response == 'restricted'){
+            //  alert('restricted')
+          }else if(response == 'authorized'){
+                // alert("Permission granted")
+          } else {
+              alert('Not any one of them')
+          }
+        })
+      }
 
 
     openPickerImage = () => {
@@ -189,14 +206,19 @@ export default class CreateProfile extends Component{
                              }   
 
                         </View>
-                        <Text style={styles.textStyle}>Nombre</Text>
                         <InputGroup borderType='rounded' style={styles.inputGroupStyle} >
                             <Input placeholder='Nombre' stle={styles.inputStyle} onChangeText={this.handleName}/>
                         </InputGroup>
                         
+                        <InputGroup borderType='rounded'  style={styles.inputGroupStyle} >
+                            <Input placeholder='Phone'  keyboardType='numeric'
+                                stle={styles.inputStyle} onChangeText={this.handlePhone}/>
+                        </InputGroup>
+
                         <View style={styles.radioButtonsContainer}>
-                            <Text style={styles.textStyle}>Sexo</Text>
-                            
+                            <TouchableHighlight style={{marginRight: 5}}>
+                                <Text style={styles.textStyle}>Sexo</Text>    
+                            </TouchableHighlight>                            
                             <RadioForm
                                 radio_props={gender_props}
                                 initial={0}
@@ -208,20 +230,12 @@ export default class CreateProfile extends Component{
                                 labelColor={'#fff'}                                   
                                 onPress={(value) => {this.setState({value:value})}}
                             />
-                            
                         </View>
-                
-                        <InputGroup borderType='rounded'  style={styles.inputGroupStyle} >
-                            <Input placeholder='Phone'  keyboardType='numeric'
-                                stle={styles.inputStyle} onChangeText={this.handlePhone}/>
-                        </InputGroup>
+                     
 
-                        <TouchableHighlight style={styles.buttonStyle}>
-                            <Button onPress={this.saveToDatabase} block
-                                    bordered light>
-                                <Text style={{color: 'white'}}>CONFIRM</Text>
-                            </Button>
-                        </TouchableHighlight>
+                        <Button  style={styles.buttonStyle} onPress={this.saveToDatabase} block bordered light>
+                            <Text style={{color: 'white'}}>CONFIRM</Text>
+                        </Button>
 
                         </View>
                     </ScrollView>
@@ -237,10 +251,13 @@ const styles = StyleSheet.create({
         backgroundColor: '#202020'
     },
     textStyle: {
-        color: 'white'
+        color: 'white',
+        fontWeight: 'bold',
+        fontSize: 18
     },
     buttonStyle: {
-        marginTop: 20
+        marginTop: 20,
+        borderRadius: 20
     },
     radioButtonStyle: {
         marginLeft: 20,
@@ -260,7 +277,8 @@ const styles = StyleSheet.create({
     },
     inputGroupStyle: {
         backgroundColor: 'white',
-        marginTop: 10
+        marginTop: 20,
+        borderRadius: 20
     },
     profileImage: {
         justifyContent: 'center',

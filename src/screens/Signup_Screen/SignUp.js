@@ -1,7 +1,7 @@
-import { Container, Item, Form, Input, Button, Label, Spinner} from "native-base";
+import { Container, Item, Form, Input, Button, Label, Spinner, InputGroup} from "native-base";
 import React, {Component} from 'react';
-import {StyleSheet, Text, TouchableHighlight, View} from 'react-native';
 
+import {StyleSheet, Text, TouchableHighlight, View, Image} from 'react-native';
 
 import Firebase from '../../../utils/Config';
 
@@ -10,6 +10,7 @@ export default class LoginScreen extends Component{
     state = { email: '', password: '', errorMessage: null, loading: false }
 
     signUp = () => {
+      // alert("It works")
         this.setState({
           loading: true
       })
@@ -31,7 +32,7 @@ export default class LoginScreen extends Component{
       const loadingState = this.state.loading ? (
               <Spinner color="red"/>
             ) : (
-               <Text>Signup is working</Text>
+               <Text style={{color: '#202020'}}>It works fine</Text>
             )
 
 
@@ -43,33 +44,39 @@ export default class LoginScreen extends Component{
                         this.state.errorMessage && 
                         <Text>{this.state.errorMessage}</Text>
                     }
-                    <Form>
-                      <Item floatingLabel>
-                        <Label>Email</Label>
-                        <Input 
-                            autoCapitalize="none" 
-                            autoCorrect={false}
-                            onChangeText = {email => this.setState({ email })}
-                            value ={this.state.email} />
-                      </Item>
-                      <Item floatingLabel>
-                        <Label>Password</Label>
-                        <Input
-                          secureTextEntry={true}
-                          autoCapitalize="none"
-                          autoCorrect={false}
-                          onChangeText={password => this.setState({password})}
-                          value={this.state.password}
-                        />
-                      </Item>
-                      <TouchableHighlight>
-                        <Button full bordered style={styles.buttonContainer} onPress={this.signUp}>
-                            <Text>SignUp</Text>
+
+                    <View style={{padding: 20}}>
+                        <View style={{padding: 10}}>
+                            <Image  source={require('../../../assets/images/bored2.png')} style={{height: 140,  width: 310 }}/>
+                        </View>
+                    </View>
+
+
+                    <View style={styles.containerForms}>
+                      <InputGroup borderType='rounded' style={styles.inputGroupStyle} >
+                          <Input 
+                            placeholder='Nombre' 
+                            stle={styles.inputStyle} 
+                            onChangeText={email => this.setState({ email })}
+                            value={this.state.email}/>
+                      </InputGroup>
+                      <InputGroup borderType='rounded' style={styles.inputGroupStyle} >
+                          <Input 
+                            secureTextEntry={true}
+                            placeholder='Nombre' 
+                            stle={styles.inputStyle} 
+                            onChangeText={password => this.setState({password})}
+                            value={this.state.password}/>
+                      </InputGroup>
+                    </View>
+
+                    <Form style={{margin: 20}}>
+                      <Button full bordered style={styles.buttonContainer} onPress={this.signUp}>
+                            <Text style={styles.styleSignUp}>SignUp</Text>
                         </Button>
-                      </TouchableHighlight>
-                      <TouchableHighlight onPress={() => this.props.navigation.navigate('Login')}>
-                          <Text style = {styles.signUpText}>Already User, Login here</Text>
-                      </TouchableHighlight>
+                      {/* <TouchableHighlight onPress={() => this.props.navigation.navigate('Login')}>
+                          <Text style = {styles.loginText}>Already User, Login here</Text>
+                      </TouchableHighlight> */}
                     </Form>
                   </Container>
 
@@ -80,15 +87,35 @@ export default class LoginScreen extends Component{
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: "#fff",
-        // alignItems: "center",
-        justifyContent: "center"
+        backgroundColor: "#202020"
       },
       buttonContainer: {
-          margin: 10
+          color: '#e8e1e1',
+          borderColor: '#fff',
+          borderRadius: 20
         },
-      signUpText: {
-          fontSize: 20,
-          fontWeight: 'bold'
-      }
+      styleSignUp: {
+        color: '#e8e1e1',
+        fontSize: 18,
+        fontWeight: 'bold'
+      },
+      loginText: {
+          fontSize: 18,
+          fontWeight: 'bold',
+          color: '#e8e1e1',
+          marginTop: 20
+      },
+      inputGroupStyle: {
+        backgroundColor: '#e8e1e1',
+        marginTop: 30,
+        borderRadius: 20
+    },
+    inputStyle: {
+      color: 'white',
+      borderColor: '#e8e1e1'
+  },
+  containerForms: {
+    margin: 20
+  }
+
 });
