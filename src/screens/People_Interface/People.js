@@ -19,81 +19,80 @@ export default class People extends Component{
             loading: false,
             people: [],
             peopleLength: 0,
-            photos: []
+            photos: [],
+            currentUser: null,
+            noPeople: false
          }
          this.actName = this.props.navigation.state.params.activityName 
         
       }
     
-    shouldComponentUpdate(nextProps, nextState){
-        return nextProps.people != this.state.people
-    }
+    // shouldComponentUpdate(nextProps, nextState){
+    //     return nextProps.people != this.state.people
+    // }
 
     componentDidMount() {
+        const that = this;
+        const {currentUser} = Firebase.auth();
+        this.setState({currentUser: currentUser.uid})
         const activityDatabaseReference = Firebase.database().ref().child('activities/' + this.actName + '/users');
+        const userDatabaseReference = Firebase.database().ref().child('users');
+        
         // start listening to Firebase Database
         this.setState({loading: true})
-        const that = this;
-        activityDatabaseReference.on('value', (snapshot) => {
+       
 
+        activityDatabaseReference.on('value', (snapshot) => {
             let peoples = [];
             snapshot.forEach(data => {
                 let person = {
                     id: data.key
                 }
-                peoples.push(person);
-                that.setState({peopleLength: peoples.length})
-                that.displayPeopleData(peoples)
-            // let data = snapshot.val();
-            // if(data){                    
-            //     let peopleData = Object.values(data)
-            //     let peopleKey = Object.keys(data)
-            // }
+
+                if(person.id != currentUser.uid){
+                    peoples.push(person)
+                }
+
+            if(peoples.length < 1){
+                that.setState({loading: false, noPeople: true})
+            }else{
+            // Display People Data here 
+            const peopleArray = []    
+                for (var i = 0; i < peoples.length; i++){
+                    userDatabaseReference.child(peoples[i].id).on("value", (snapShot) => {
+                        let data = snapShot.val()
+                        let personObject = {
+                            nombre: data.nombre,
+                            phone: data.phone,
+                            profileImageUrl: data.profileImageUrl
+                        }  
+                                
+                        peopleArray.push(personObject)
+                        that.setState({
+                            people: peopleArray,
+                            loading: false
+                        })
+                        }
+                    )
+                    // }
+                }
+            }
+
+            
+                    
          });
-         
+       
     })
    }
 
-    displayPeopleData = (peopleKeys) => {
-        let that = this;
-        const userDatabaseReference = Firebase.database().ref().child('users');
-        
-        
-        // alert("Original datas are: ", peopleKeys)
-        const peopleArray = []
-        peopleKeys.map((dataKey, index) => {
-            // alert("People length" + )
-            
-            userDatabaseReference.child(dataKey.id).on("value", (snapShot) => {
-                let data = snapShot.val()
-                let personObject = {
-                    nombre: data.nombre,
-                    phone: data.phone,
-                    profileImageUrl: data.profileImageUrl
-                }
 
-                peopleArray.push(personObject)
-              
-                }
-              )
-               // alert("PersonKeys are: ", personKey)
-             if(peopleArray.length === this.state.peopleLength){
-                that.setState({
-                    people: peopleArray,
-                    loading: false
-                })
-             }
-                
-
-
-
-                
-        })  
-    }
 
     render(){
         // position will be a value between 0 and photos.length - 1 assuming you don't scroll pass the ends of the ScrollView
         let position = Animated.divide(this.scrollX, width);
+        
+        const {people, loading, noPeople} = this.state
+        
         return(
             <View style={styles.containerPeople}>
                 
@@ -114,14 +113,13 @@ export default class People extends Component{
                             <TouchableHighlight>
                                 <Button  onPress={() => this.props.navigation.navigate('People', {actName: this.actName})} 
                                         bordered light style={{width: 150, justifyContent: 'center'}}>
-                                    <Text style={{color: 'white'}}>personas</Text>
+                                    <Text style={{color: 'white', fontWeight: "bold"}}>personas</Text>
                                 </Button>
                             </TouchableHighlight>
-
                             <TouchableHighlight>
                                 <Button  onPress={() => this.props.navigation.navigate('Invitation', {actName: this.actName})}
                                         bordered light style={{width: 150, justifyContent: 'center'}}>
-                                    <Text style={{color: 'white'}}>invitaciones</Text>
+                                    <Text style={{color: 'white', fontWeight: "bold"}}>invitaciones</Text>
                                 </Button>
                             </TouchableHighlight>
 
@@ -131,36 +129,43 @@ export default class People extends Component{
 
 
                         {
-                              this.state.loading ? (
+                              loading ? (
                                   <View style={{padding: 60}}>
                                       <Text style={{color: 'red', fontSize: 22}}>Loading People</Text>
                                       <Spinner color="red"/>
                                   </View>
 
                               ) : (
-                                this.state.people.map((data, index) => {
-                                    return(
-                                        <View>
-                                           <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', marginTop: 20, backgroundColor: '#fff'}}>
-                                                <TouchableHighlight onPress={() => this.props.navigation.navigate('Profile', {actName: this.actName})}>
-                                                    <Image
-                                                        source={{uri: `${data.profileImageUrl}`}}
-                                                        style={{width: width, height: 300}}
-                                                        />
-                                                </TouchableHighlight>
-                                                <View style={{flexDirection: 'row', justifyContent: 'center', marginTop: 5}}>
-                                                    <Text style={{fontSize: 20, fontWeight:'bold'}}>{data.nombre}, 27</Text>
-                                                    <Image source={require('../../../assets/images/camera_1.png')} 
-                                                        style={{width: 30, height: 30, marginLeft: 60}}/>
-                                                    <Text style={{fontSize: 20, fontWeight: 'bold', marginLeft: 5}}>3</Text>
-                                                </View>                                    
+                                noPeople ? (
+                                    <View style={{padding: 40, flexDirection: 'row'}}>
+                                        <Text style={{color: 'red', fontSize: 22}}> No one in {this.actName} activity</Text>
+                                    </View>
+                                ): (
+                                    people.map((data, index) => {
+                                        return(
+                                            <View>
+                                               <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', marginTop: 20, backgroundColor: '#fff'}}>
+                                                    <TouchableHighlight onPress={() => this.props.navigation.navigate('Profile', {actName: this.actName})}>
+                                                        <Image
+                                                            source={{uri: `${data.profileImageUrl}`}}
+                                                            style={{width: width, height: 300}}
+                                                            />
+                                                    </TouchableHighlight>
+                                                    <View style={{flexDirection: 'row', justifyContent: 'center', marginTop: 5}}>
+                                                        <Text style={{fontSize: 20, fontWeight:'bold'}}>{data.nombre}, 27</Text>
+                                                        <Image source={require('../../../assets/images/camera_1.png')} 
+                                                            style={{width: 30, height: 30, marginLeft: 60}}/>
+                                                        <Text style={{fontSize: 20, fontWeight: 'bold', marginLeft: 5}}>3</Text>
+                                                    </View>                                    
+                                                </View>
                                             </View>
-                                        </View>
-                                
-                                    )
-                                }
-                            )
-                              )
+                                    
+                                        )
+                                    }
+                                )
+                             
+                             )
+                           )
                         }
 
 

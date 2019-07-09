@@ -12,16 +12,18 @@ import { PermissionsAndroid } from 'react-native';
 import {getDistanceFromLatLonInKm} from '../../../utils/getDistance';
 
 import Polyline from '@mapbox/polyline'
+import MapViewDirections from 'react-native-maps-directions';
+import Firebase from '../../../utils/Config';
 
-
-import Permissions from 'react-native-permissions'
 import MapView, {
     ProviderPropType,
     Marker,
     AnimatedRegion,
     PROVIDER_GOOGLE
-  } from 'react-native-maps';
+  } from 'react-native-maps'
 
+import Category from './Category'
+import SecondCategory from './SecondCategory'
 
 const { width } = Dimensions.get('window');
 
@@ -39,6 +41,7 @@ export default class Promotion extends Component{
         this.currentUserLatitude = this.props.navigation.state.params.lat
         this.currentUserLongitude = this.props.navigation.state.params.lng
         this.image_api = this.props.navigation.state.params.image_api
+        
         this.API_KEY = 'AIzaSyAizovCeZayRAZthl91it19QYFw1UF3-Jk'
 
         this.latitude = this.locationData.geometry.location.lat
@@ -50,7 +53,8 @@ export default class Promotion extends Component{
               longitude: this.longitude,
               distance: 0,
               coords: [],
-              x: 'false'
+              x: 'false',
+              customPhotoUrl: ''
             }),
           }; 
 
@@ -62,6 +66,8 @@ export default class Promotion extends Component{
             latitude: this.latitude,
             longitude: this.longitude
         }
+
+        this.mapView = null;
     }
 
     animate() {
@@ -142,16 +148,53 @@ export default class Promotion extends Component{
     componentDidMount(){
         this.getDistance()
         this.mergeLot()
+        const that = this
+
+        // display custom photos if real photoes are not available
+        const customPhotoPath = Firebase.database().ref().child('custom_photos')
+
+        customPhotoPath.once('value', (dataSnapshot) => {
+            
+            dataSnapshot.forEach((child) => {
+                const data = child.val()
+                const photoUrl = data.photo
+                const rank = data.rank
+
+                if(this.actName === 'game' && rank === 50){
+                    that.setState({
+                        customPhotoUrl: photoUrl
+                    })    
+                } else if(this.actName === 'bar' && rank === 8){
+                    that.setState({
+                        customPhotoUrl: photoUrl
+                    })    
+                }else if(this.actName === 'movie_theater' && rank === 50){
+                    that.setState({
+                        customPhotoUrl: photoUrl
+                    })    
+                }else if(this.actName === 'gym' && rank === 70){
+                    that.setState({
+                        customPhotoUrl: photoUrl
+                    })    
+                    // asdfasdf
+                }else if(this.actName === 'restaurant' && rank === 5){
+                    that.setState({
+                        customPhotoUrl: photoUrl
+                    })    
+                }else if(this.actName === 'cafe' && rank === 0){
+                    that.setState({
+                        customPhotoUrl: photoUrl
+                    })    
+                }
+            })
+
+        })
+
     }
 
     render(){
         
-        const markers = [];
-        if (this.locationData) {
-            for(var i of this.locationTest) {
-                markers.push(i);
-            }
-        }
+        const {customPhotoUrl} = this.state
 
         return(
             <ScrollView>
@@ -177,7 +220,7 @@ export default class Promotion extends Component{
                                             />
                                         ) : (
                                             <Image
-                                            source={require('../../../assets/images/kfc.jpg')}
+                                            source={{uri: `${customPhotoUrl}`}}
                                             style={{width: width-50, height: 150}}
                                         />        
                                         )
@@ -204,36 +247,40 @@ export default class Promotion extends Component{
                             </Card>
                         </TouchableHighlight>
                         <Text style={{padding: 10}}>!Selecciona una pelicula e invita a alguien</Text>
+                        {
+                            this.actName === "movie_theater" ? (
+                                <View style={styles.styleHorizontalScrollView}>
+                                {/* begin */}
+                                 <View style={{ flex: 1, backgroundColor: 'white', paddingTop: 20 }}>
+     
+                                     <View style={{ height: 130, marginTop: 20, marginBottom: 10}}>
+                                         <ScrollView
+                                             horizontal={true}
+                                             showsHorizontalScrollIndicator={false}
+                                         >
+                                             <Category imageUri={{uri: 'https://firebasestorage.googleapis.com/v0/b/boredapp-11e1d.appspot.com/o/promotions%2Fasd.jpg?alt=media&token=c7ba6607-fd6d-45ab-b2d6-e5656307f13b'}}
+                                             />
+                                             <Category imageUri={{uri: 'https://firebasestorage.googleapis.com/v0/b/boredapp-11e1d.appspot.com/o/promotions%2Fpromocion%20-%20mdconalds%201.jpg?alt=media&token=3cc95607-0760-4073-8ce3-6f3ac40abe77'}}
+                                              />
+                                             <Category imageUri={{uri: 'https://firebasestorage.googleapis.com/v0/b/boredapp-11e1d.appspot.com/o/promotions%2Fpromocion%20-%20mdconalds%202.jpg?alt=media&token=30e2c3f0-9529-4cb3-881f-2225bb7ca9f0'}}
+                                              />
+                                         </ScrollView>
+                                     </View>
+                                     
+                                 </View>          
+                                {/* end */}
+                            </View>
+     
+                            ) : (
+                                <SecondCategory imageUri={{uri: 'https://firebasestorage.googleapis.com/v0/b/boredapp-11e1d.appspot.com/o/promotions%2FMcDonalds.jpg?alt=media&token=252ae210-2618-4f89-9efd-7d6f260131ca'}}/>
+                            )
+                        }                
+                      
 
-                        {/* <View style={{width: 120, height: 150}}>
-                            <ScrollView
-                                horizontal={true}
-                                pagingEnabled={true} // animates ScrollView to nearest multiple of it's own width
-                                showsHorizontalScrollIndicator={false}
-                                // the onScroll prop will pass a nativeEvent object to a function
-                                onScroll={Animated.event( // Animated.event returns a function that takes an array where the first element...
-                                [{ nativeEvent: { contentOffset: { x: this.scrollX } } }] // ... is an object that maps any nativeEvent prop to a variable
-                                )} // in this case we are mapping the value of nativeEvent.contentOffset.x to this.scrollX
-                                scrollEventThrottle={16} // this will ensure that this ScrollView's onScroll prop is called no faster than 16ms between each function call
-                                >
-                                {photos.map((source, i) => { // for every object in the photos array...
-                                return ( // ... we will return a square Image with the corresponding object as the source
-                                    <TouchableHighlight>
-                                        <ImageOverlay
-                                            key={i}
-                                            source={source}
-                                            style={{width: 100, height: 100}}
-                                            contentPosition='bottom'>
-
-                                            </ImageOverlay>  
-                                    </TouchableHighlight>
-                                );
-                                })}
-                            </ScrollView>
-                        </View> */}
-
-
-
+                      <View style={styles.mapContainer}>
+                        <View style={{backgroundColor: '#3c85fa', height: 50, alignItems: 'center', padding: 5}}>
+                           <Text style={{color: 'white'}}>Medir distancia</Text>
+                        </View>
                         <MapView.Animated
                             provider={PROVIDER_GOOGLE}                            
                             zoomEnabled={true}
@@ -251,6 +298,8 @@ export default class Promotion extends Component{
                                 latitudeDelta: this.LATITUDE_DELTA,
                                 longitudeDelta: this.LONGITUDE_DELTA,
                             }}
+                            ref={c => this.mapView = c}
+                            
                          >
                             {!!this.latitude && !!this.longitude && <MapView.Marker
                                     coordinate={{"latitude":this.latitude,"longitude":this.longitude}}
@@ -258,27 +307,24 @@ export default class Promotion extends Component{
                                 />
                             }
 
-                            {!!this.currentUserLatitude && !!this.currentUserLongitude && <MapView.Marker
-                            coordinate={{"latitude":this.currentUserLatitude,"longitude":this.currentUserLongitude}}
-                            title={"Your Position"} image={require('../../../assets/images/icons8-marker-100.png')}
-                            />}   
-
-                           {!!this.latitude && !!this.longitude && this.state.x == 'true' && 
-                                <MapView.Polyline
-                                    coordinates={this.state.coords}
-                                    strokeWidth={2}
-                                    strokeColor="red"
+                            {
+                                !!this.currentUserLatitude && !!this.currentUserLongitude && <MapView.Marker
+                                coordinate={{"latitude":this.currentUserLatitude,"longitude":this.currentUserLongitude}}
+                                title={"Your Position"} image={require('../../../assets/images/icons8-marker-100.png')}
                                 />
-                            }
-                            <MapView.Polyline
-                                coordinates={[
-                                    {latitude: this.currentUserLatitude, longitude: this.currentUserLongitude},
-                                    {latitude: this.latitude, longitude: this.longitude},
-                                ]}
-                                strokeWidth={2}
-                                strokeColor="black"/>
+                            }  
+
+                            <MapViewDirections
+                                origin={{latitude: this.currentUserLatitude, longitude: this.currentUserLongitude}}
+                                destination={{latitude: this.latitude, longitude: this.longitude}}
+                                apikey={this.API_KEY}
+                                strokeWidth={3}
+                                strokeColor="hotpink"
+                                optimizeWaypoints={true}
+                            />    
                             
-                        </MapView.Animated>        
+                        </MapView.Animated>     
+                      </View>
 
                     </View>                    
                 </View>  
@@ -301,5 +347,14 @@ const styles = StyleSheet.create({
     map: {
         width: 300,
         height: 200
+    },
+    styleHorizontalScrollView: {
+        margin: 5
+    },
+    mapContainer: {
+        overflow: 'hidden', 
+        borderColor: '#dddddd', 
+        borderRadius: 20, 
+        borderWidth: 2
     }
 });

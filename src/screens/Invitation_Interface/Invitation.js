@@ -26,55 +26,30 @@ export default class Invitation extends Component{
         locationPermission: '',
         locationData: [],
         locationObject: {},
-        customPhotos: [],
         latitude: 0.0,
         longitude: 0.0,
+        customPhotoUrl: ''
         }
         this.actName = this.props.navigation.state.params.actName
         this.handlePromotionClick = this.handlePromotionClick.bind(this);
    }
 
    getNearbyLocations = (url) => {
-    axios
-    .get(url)
-    .then(data => {
-        this.setState({ locationData:data});
-    })
-    .catch(err => {
-        console.log(err);
-        return null;
-    });
+        axios
+        .get(url)
+        .then(data => {
+            this.setState({ locationData:data});
+        })
+        .catch(err => {
+            console.log(err);
+            return null;
+        })
+  }
 
-   }
-
-   testCustomPhotos = () => {
-       console.log("Custom Photos are: " + this.state.customPhotos)
-     
-    }
-
-   getCustomPhotos = () => {
-    const customPhotoPath = Firebase.database().ref().child('custom_photos');
-    customPhotoPath.on('value', (dataSnapshot) => {
-            var photoDatas = [];
-            
-            dataSnapshot.forEach((child) => {
-                photoDatas.push({
-                    photo: child.val().photo,
-                    rank: child.val().rank
-                })    
-            });
-            this.setState({
-                customPhotos: photoDatas
-            })
-
-        }) 
-
-        
-   }
-
-
-   handlePromotionClick(activityName, result, lat, lng, image_api){
-       this.props.navigation.navigate("Promotion",{activityName: activityName, result: result, lat: lat, lng: lng, image_api, image_api})
+   handlePromotionClick(activityName, result, lat, lng, image_api, customPhotoUrl){
+       this.props.navigation.navigate("Promotion",
+                            {activityName: activityName, result: result, 
+                            lat: lat, lng: lng, image_api: image_api, customPhotoUrl: customPhotoUrl})
    }
 
    shouldComponentUpdate(nextProps, nextState){
@@ -83,10 +58,48 @@ export default class Invitation extends Component{
 
 
     componentDidMount() {
-        this.getCustomPhotos()
-        this.testCustomPhotos()
         this._requestPermission()
-        this.callLocation();
+        this.callLocation()
+        let that = this
+
+        // display custom photos if real photoes are not available
+        const customPhotoPath = Firebase.database().ref().child('custom_photos')
+        customPhotoPath.once('value', (dataSnapshot) => {
+          
+            dataSnapshot.forEach((child) => {
+                const data = child.val()
+                const photoUrl = data.photo
+                const rank = data.rank
+
+                if(this.actName === 'game' && rank === 50){
+                    that.setState({
+                        customPhotoUrl: photoUrl
+                    })    
+                } else if(this.actName === 'bar' && rank === 8){
+                    that.setState({
+                        customPhotoUrl: photoUrl
+                    })    
+                }else if(this.actName === 'movie_theater' && rank === 50){
+                    that.setState({
+                        customPhotoUrl: photoUrl
+                    })    
+                }else if(this.actName === 'gym' && rank === 70){
+                    that.setState({
+                        customPhotoUrl: photoUrl
+                    })    
+                    // asdfasdf
+                }else if(this.actName === 'restaurant' && rank === 5){
+                    that.setState({
+                        customPhotoUrl: photoUrl
+                    })    
+                }else if(this.actName === 'cafe' && rank === 0){
+                    that.setState({
+                        customPhotoUrl: photoUrl
+                    })    
+                }
+            })
+
+        }) 
     }
     
       // Request permission to access photos
@@ -98,7 +111,7 @@ export default class Invitation extends Component{
           if(response == 'restricted'){
             //  alert('restricted')
           }else if(response == 'authorized'){
-                this.getCurrentLocation();
+                this.getCurrentLocation()
           } else {
               alert('Not any one of them')
           }
@@ -133,54 +146,6 @@ export default class Invitation extends Component{
       }
 
 
-
-
-
-    // componentDidMount = () => {
-    //     var that =this;
-    //     //Checking for the permission just after component loaded
-    //         Permissions.request('location', { type: 'always' }).then(response => {
-                
-    //             if(response == 'authorized'){
-    //                 alert("Authorized")
-    //             }else if(response == 'denied'){
-    //                 alert("Denied")
-    //             }else if(response == 'restricted'){
-    //                 alert("Restricted")
-    //             }else if(response == 'undetermined'){
-    //                 alert("Undetermined")
-    //             }else{
-    //                 alert("Not anyone of these")
-    //             }
-
-    //             this.setState({ locationPermission: response })
-    //           })
-              
-    //         // async function requestCameraPermission() {
-    //         //     try {
-    //         //         const granted = await PermissionsAndroid.request(
-    //         //             PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,{
-    //         //                 'title': 'Location Access Required',
-    //         //                 'message': 'This App needs to Access your location'
-    //         //             }
-    //         //         )
-    //         //         if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-    //         //             //To Check, If Permission is granted
-    //         //             that.callLocation(that);
-    //         //         } else {
-    //         //             alert("Permission Denied");
-    //         //         }
-    //         //     } catch (err) {
-    //         //         alert("err" + err);
-    //         //         console.warn(err)
-    //         //     }
-    //         // }
-
-           
-
-    //         // requestCameraPermission();
-    //     }    
-
     getCurrentLocation = () => {
         navigator.geolocation.getCurrentPosition(
             (position) => {
@@ -198,7 +163,6 @@ export default class Invitation extends Component{
           );
     }
 
-
     callLocation(){
         
         this.watchID = navigator.geolocation.watchPosition((position) => {
@@ -212,13 +176,11 @@ export default class Invitation extends Component{
 
 
     render(){
-        // position will e a value between 0 and photos.length - 1 assuming you don't scroll pass the ends of the ScrollView
         let position = Animated.divide(this.scrollX, width);
-        // const actName = this.props.navigation.state.params.activityName 
-        // alert("ActName: " + actName)    
-
+        const {locationData, customPhotoUrl} = this.state
+        
         return(
-            <View style={styles.containerPeople}>
+                <View style={styles.containerPeople}>
                     <View style={styles.peopleNavBar}>
                         <TouchableHighlight onPress={() => this.props.navigation.navigate('Activity')}>
                             <Icon name="arrow-left" color="white" size={30}/>
@@ -231,39 +193,38 @@ export default class Invitation extends Component{
                             <Icon name="message-text" style={{fontSize: 30, color: 'white'}}/>
                         </TouchableHighlight>
                     </View>
-
-
                     
                    <ScrollView>
                     <View style={styles.tabViewStyle}>
-                                <TouchableHighlight>
-                                    <Button  onPress={() => this.props.navigation.navigate('People', {activityName: this.actName})} 
-                                            bordered light style={{width: 150, justifyContent: 'center'}}>
-                                        <Text style={{color: 'white'}}>personas</Text>
-                                    </Button>
-                                </TouchableHighlight>
-                                <TouchableHighlight>
-                                    <Button bordered light style={{width: 150, justifyContent: 'center'}}>
-                                        <Text style={{color: 'white'}}>invitaciones</Text>
-                                    </Button>
-                                </TouchableHighlight>
-                        </View>
+                        <TouchableHighlight>
+                            <Button  onPress={() => this.props.navigation.navigate('People', {activityName: this.actName})} 
+                                    bordered light style={{width: 150, justifyContent: 'center'}}>
+                                <Text style={{color: 'white', fontWeight: "bold"}}>personas</Text>
+                            </Button>
+                        </TouchableHighlight>
+                        <TouchableHighlight>
+                            <Button bordered light style={{width: 150, justifyContent: 'center'}}>
+                                <Text style={{color: 'white', fontWeight: "bold"}}>invitaciones</Text>
+                            </Button>
+                        </TouchableHighlight>
+                    </View>
                     {
-                            this.state.locationData.length === 0 ? (
+                            locationData.length === 0 ? (
                                 <View style={{justifyContent: 'center', padding: 60}}>
                                     <Text style={{color: 'red', fontSize: 22}}>Loading invitaciones</Text>
                                     <Spinner color="red"/>
                                 </View>
                             ): (
-                                this.state.locationData.data.results.map((result, index)=>{
+                                locationData.data.results.map((result, index)=>{
                                     return (
                                         <View style={{backgroundColor: 'white', padding: 10, marginTop: 5, marginRight: 5, borderRadius: 25/2}}>
                                              {
                                                  result.photos ? 
                                                     (
                                                     <View>
-                                                        <TouchableHighlight onPress={() => this.handlePromotionClick(this.actName, result, this.state.latitude, this.state.longitude,
-                                                                    _google_image_api)}>
+                                                        <TouchableHighlight 
+                                                           onPress={() => this.handlePromotionClick(this.actName, result, 
+                                                            this.state.latitude, this.state.longitude, _google_image_api)}>
                                                             <Image
                                                                 source = {{uri: `${_google_image_api}${result.photos[0].photo_reference}&key=${API_KEY}`}}
                                                                 style={{width: width-50, height: 200, resizeMode:'cover'}}
@@ -272,11 +233,18 @@ export default class Invitation extends Component{
                                                     </View>
                                                 )
                                                  : (
+                                                    // display the images from Firebase Database...
                                                     <View>
-                                                        <TouchableHighlight onPress={() => this.handlePromotionClick(this.actName, result, this.state.latitude, this.state.longitude)}>
-                                                            <Image
+                                                        <TouchableHighlight
+                                                          onPress={() => this.handlePromotionClick(this.actName, result, 
+                                                                          this.state.latitude, this.state.longitude, customPhotoUrl)}>
+                                                            {/* <Image
                                                                 source={require('../../../assets/images/kfc.jpg')}
                                                                 style={{width: width-50, height: 150}}
+                                                            /> */}
+                                                            <Image
+                                                                source={{uri: `${customPhotoUrl}`}}
+                                                                style={{width: width-50, height: 200, resizeMode:'cover'}}
                                                             />
                                                         </TouchableHighlight>
                                                     </View>
