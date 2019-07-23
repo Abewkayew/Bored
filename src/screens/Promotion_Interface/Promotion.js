@@ -1,7 +1,7 @@
 import React, {Component} from 'react';
 import {StyleSheet, View, Text, Image, ScrollView, TouchableHighlight, Dimensions, Animated, Platform} from 'react-native';
 import { Container, Header, Content, Card, CardItem, Thumbnail, Button, Left, Body, Right, Spinner } from 'native-base';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import Icon from 'react-native-vector-icons/MaterialIcons'
 
 import ImageOverlay from "react-native-image-overlay";
 
@@ -38,15 +38,16 @@ export default class Promotion extends Component{
             
         this.actName = this.props.navigation.state.params.activityName
         this.locationData = this.props.navigation.state.params.result
-        this.currentUserLatitude = this.props.navigation.state.params.lat
-        this.currentUserLongitude = this.props.navigation.state.params.lng
+        this.currentUserLatitude = this.locationData.userLatitude
+        this.currentUserLongitude = this.locationData.userLongitude
         this.image_api = this.props.navigation.state.params.image_api
-        
+        this.promotions = this.locationData.promotion
+
         this.API_KEY = 'AIzaSyAizovCeZayRAZthl91it19QYFw1UF3-Jk'
 
-        this.latitude = this.locationData.geometry.location.lat
-        this.longitude = this.locationData.geometry.location.lng
-
+        this.latitude = this.locationData.latitude
+        this.longitude = this.locationData.longitude
+        
         this.state = {
             coordinate: new AnimatedRegion({
               latitude: this.latitude,
@@ -88,10 +89,10 @@ export default class Promotion extends Component{
 
     getDistance = () => {
         
-        const lat1 = this.currentUserLatitude
-        const lon1 = this.currentUserLongitude
-        const lat2 = this.locationData.geometry.location.lat
-        const lon2 = this.locationData.geometry.location.lng
+        const lat1 = this.locationData.userLatitude
+        const lon1 = this.locationData.userLongitude
+        const lat2 = this.locationData.latitude
+        const lon2 = this.locationData.longitude
         let distanceInBetween = getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2)
         distanceInBetween = distanceInBetween.toFixed(2)
         this.setState({distance: distanceInBetween})
@@ -111,15 +112,15 @@ export default class Promotion extends Component{
 
     async getDirections(startLoc, destinationLoc) {
         try {
-            let resp = await fetch(`https://maps.googleapis.com/maps/api/directions/json?origin=${ startLoc }&destination=${ destinationLoc }&key=${this.API_KEY}`)
-            let respJson = await resp.json();
-            let points = Polyline.decode(respJson.routes[0].overview_polyline.points);
-            let coords = points.map((point, index) => {
-                return  {
-                    latitude : point[0],
-                    longitude : point[1]
-                }
-            })
+            // let resp = await fetch(`https://maps.googleapis.com/maps/api/directions/json?origin=${ startLoc }&destination=${ destinationLoc }&key=${this.API_KEY}`)
+            // let respJson = await resp.json();
+            // let points = Polyline.decode(respJson.routes[0].overview_polyline.points);
+
+            let coords = {
+                    latitude : this.locationData.latitude,
+                    longitude : this.locationData.longitude
+            }
+
             this.setState({coords: coords})
             return coords
         } catch(error) {
@@ -150,46 +151,6 @@ export default class Promotion extends Component{
         this.mergeLot()
         const that = this
 
-        // display custom photos if real photoes are not available
-        const customPhotoPath = Firebase.database().ref().child('custom_photos')
-
-        customPhotoPath.once('value', (dataSnapshot) => {
-            
-            dataSnapshot.forEach((child) => {
-                const data = child.val()
-                const photoUrl = data.photo
-                const rank = data.rank
-
-                if(this.actName === 'game' && rank === 50){
-                    that.setState({
-                        customPhotoUrl: photoUrl
-                    })    
-                } else if(this.actName === 'bar' && rank === 8){
-                    that.setState({
-                        customPhotoUrl: photoUrl
-                    })    
-                }else if(this.actName === 'movie_theater' && rank === 50){
-                    that.setState({
-                        customPhotoUrl: photoUrl
-                    })    
-                }else if(this.actName === 'gym' && rank === 70){
-                    that.setState({
-                        customPhotoUrl: photoUrl
-                    })    
-                    // asdfasdf
-                }else if(this.actName === 'restaurant' && rank === 5){
-                    that.setState({
-                        customPhotoUrl: photoUrl
-                    })    
-                }else if(this.actName === 'cafe' && rank === 0){
-                    that.setState({
-                        customPhotoUrl: photoUrl
-                    })    
-                }
-            })
-
-        })
-
     }
 
     render(){
@@ -199,82 +160,76 @@ export default class Promotion extends Component{
         return(
             <ScrollView>
                   <View style={styles.containerProfile}>
-                    <View style={styles.chatNavBar}>
-                        <TouchableHighlight onPress={() => this.props.navigation.navigate('Invitation', {actName: this.actName})}>
-                            <Icon name="arrow-left" color="white" size={30}/>
+                  <View style={styles.navigationBar} elevation={20}>
+                        <TouchableHighlight style={styles.navigationItems} 
+                            onPress={() => this.props.navigation.navigate('Activity')}>
+                            <Icon name="arrow-back" size={30}/>
                         </TouchableHighlight>
-                        <Text style={{color: 'white', fontSize: 16, fontWeight: 'bold', left: 30}}>i
-                            <Text style={{color: 'white', fontSize: 20, textDecorationLine: 'underline',
-                                fontWeight: 'bold', paddingBottom: 10}}>No te aburras</Text>!
-                        </Text>
+                        <TouchableHighlight style={styles.navigationItems} onPress={() => this.props.navigation.navigate('Activity')}>
+                            <Icon name="mood" style={{fontSize: 40, color: '#4DDFE5'}}/>
+                        </TouchableHighlight>
+                        <View style={styles.navigationItems}>
+                            <TouchableHighlight onPress={() => this.props.navigation.navigate('ChatContainer')}>
+                                <Icon name="message" style={{fontSize: 35, color: '#1f1f14'}}/>
+                            </TouchableHighlight>
+                            <Button  
+                                rounded style={{top: -15, left: 15, backgroundColor: '#4DDFE5',
+                                padding: 5, width: 20, height: 20, alignContent: 'center'}}>
+                                <Text style={{color: 'white'}}>2</Text>
+                            </Button>
+                        </View>
                     </View>
-                    <View style={{padding: 10, marginRight: 5, backgroundColor: '#fff'}}>
-                        <TouchableHighlight>
-                            <Card>
-                                <CardItem cardBody bordered>
-                                    {
-                                        this.locationData.photos ? (
-                                            <Image 
-                                            source = {{uri: `${this.image_api}${this.locationData.photos[0].photo_reference}&key=${this.API_KEY}`}}
-                                            style={{width: width-50, height: 200}}
-                                            />
-                                        ) : (
-                                            <Image
-                                            source={{uri: `${customPhotoUrl}`}}
-                                            style={{width: width-50, height: 150}}
-                                        />        
-                                        )
-                                    }
-                                </CardItem>
-                                <CardItem bordered>
-                                <Body>
-                                    <Text style={{fontSize: 18}}>{this.locationData.name}</Text>
-                                    <View style={{flexDirection: 'row', marginTop: 8}}> 
-                                        <Image
-                                            source={require('../../../assets/images/pin.png')}
-                                            style={{width: 25, height: 25}}
-                                            />
-                                        {   this.state.distance < 1000 ? (   
-                                                <Text style={{fontSize: 18}}>{this.state.distance} m </Text>
-                                            ) :
-                                            (   
-                                                <Text style={{fontSize: 18}}>{(this.state.distance)/1000} km </Text>
-                                            )
+                    <View style={styles.shadowStyle}></View>
+
+                    <View style={styles.containerPlaces}>
+                        <View style={styles.imageContainer}>
+                            <Image
+                                source = {{uri: this.locationData.image}}
+                                style={{width: width, height: 250, resizeMode:'cover'}}
+                            />
+                        </View>
+                        <View style={styles.nameAndKm}>
+                            <Text style={{marginTop: 5, fontSize: 18, fontWeight: 'bold'}}>{this.locationData.name}</Text>
+                            {/* <Text>Photo References: {result.photos.photo_reference}</Text> */}
+                            { this.state.distance < 1000 ? (   
+                                    this.state.distance == 0 ? (
+                                        <Text style={{fontSize: 16, padding: 5}}>{this.state.distance} m away</Text>
+                                    ): (
+                                        <Text style={{fontSize: 16, padding: 5}}>You are in the same place</Text>
+                                    )
+                                ) :
+                                (   
+                                    <Text style={{fontSize: 16, padding: 5}}>{(this.state.distance)/1000} km away</Text>
+                                )
+                            }
+                        </View>
+                    </View>
+
+                        <Text style={styles.inviteMovies}>Choose a movie and send an Invitation</Text>
+                        
+                        <View style={styles.styleHorizontalScrollView}>
+                        {/* begin */}
+                            <View style={{ flex: 1, backgroundColor: 'white', paddingTop: 20, marginBottom: 10}}>
+
+                                    <ScrollView
+                                        horizontal={true}
+                                        showsHorizontalScrollIndicator={false}>
+                                        
+                                        {
+                                            this.promotions.map((data, index) => {
+                                                return(
+                                                <Category imageUri={{uri: data.image }} text={data.text}
+                                                />                                                         
+                                                )
+                                            })
                                         }
-                                    </View>
-                                </Body>
-                                </CardItem>
-                            </Card>
-                        </TouchableHighlight>
-                        <Text style={{padding: 10}}>!Selecciona una pelicula e invita a alguien</Text>
-                        {
-                            this.actName === "movie_theater" ? (
-                                <View style={styles.styleHorizontalScrollView}>
-                                {/* begin */}
-                                 <View style={{ flex: 1, backgroundColor: 'white', paddingTop: 20 }}>
-     
-                                     <View style={{ height: 130, marginTop: 20, marginBottom: 10}}>
-                                         <ScrollView
-                                             horizontal={true}
-                                             showsHorizontalScrollIndicator={false}
-                                         >
-                                             <Category imageUri={{uri: 'https://firebasestorage.googleapis.com/v0/b/boredapp-11e1d.appspot.com/o/promotions%2Fasd.jpg?alt=media&token=c7ba6607-fd6d-45ab-b2d6-e5656307f13b'}}
-                                             />
-                                             <Category imageUri={{uri: 'https://firebasestorage.googleapis.com/v0/b/boredapp-11e1d.appspot.com/o/promotions%2Fpromocion%20-%20mdconalds%201.jpg?alt=media&token=3cc95607-0760-4073-8ce3-6f3ac40abe77'}}
-                                              />
-                                             <Category imageUri={{uri: 'https://firebasestorage.googleapis.com/v0/b/boredapp-11e1d.appspot.com/o/promotions%2Fpromocion%20-%20mdconalds%202.jpg?alt=media&token=30e2c3f0-9529-4cb3-881f-2225bb7ca9f0'}}
-                                              />
-                                         </ScrollView>
-                                     </View>
-                                     
-                                 </View>          
-                                {/* end */}
-                            </View>
-     
-                            ) : (
-                                <SecondCategory imageUri={{uri: 'https://firebasestorage.googleapis.com/v0/b/boredapp-11e1d.appspot.com/o/promotions%2FMcDonalds.jpg?alt=media&token=252ae210-2618-4f89-9efd-7d6f260131ca'}}/>
-                            )
-                        }                
+
+                                    </ScrollView>
+                                        
+                            </View>          
+                        {/* end */}
+                    </View>
+            
                       
 
                       <View style={styles.mapContainer}>
@@ -282,7 +237,7 @@ export default class Promotion extends Component{
                            <Text style={{color: 'white'}}>Medir distancia</Text>
                         </View>
                         <MapView.Animated
-                            provider={PROVIDER_GOOGLE}                            
+                            provider={PROVIDER_GOOGLE}
                             zoomEnabled={true}
                             minZoomLevel ={0}
                             showUserLocation
@@ -291,7 +246,7 @@ export default class Promotion extends Component{
                             showsCompass={true}
                             showsBuildings={true}
                             showsIndoors={true}
-                            style={{width: width-30, padding: 10, marginRight: 5, height: 300}}
+                            style={{width: width, height: 300}}
                             initialRegion={{
                                 latitude: this.latitude,
                                 longitude: this.longitude,
@@ -321,13 +276,12 @@ export default class Promotion extends Component{
                                 strokeWidth={3}
                                 strokeColor="hotpink"
                                 optimizeWaypoints={true}
-                            />    
-                            
+                            />
+                       
                         </MapView.Animated>     
                       </View>
 
-                    </View>                    
-                </View>  
+                    </View>
             </ScrollView>
         );
     }
@@ -336,14 +290,26 @@ export default class Promotion extends Component{
 const styles = StyleSheet.create({
     containerProfile: {
         flex: 1,
-        backgroundColor: '#202020',
+        backgroundColor: '#fff',
         paddingBottom: 20
     },
-   chatNavBar: {
-    flexDirection: 'row',
-    height: 60,
-    marginTop: 10
+    navigationBar: {
+        height: 60,
+       flexDirection: 'row',
+       justifyContent: 'space-between',
+       elevation: 2,
+       marginRight: 5
+   },
+   navigationItems: {
+        marginVertical: 10,
+        marginHorizontal: 10
     },
+    shadowStyle: {
+        marginBottom: 30,
+        height: 1,
+        backgroundColor: '#d6d6c2'
+    },
+
     map: {
         width: 300,
         height: 200
@@ -356,5 +322,34 @@ const styles = StyleSheet.create({
         borderColor: '#dddddd', 
         borderRadius: 20, 
         borderWidth: 2
+    },
+    inviteMovies: {
+        margin: 20,
+        color: '#1cc9be',
+        fontSize: 23,
+        fontWeight: 'bold'
+    },
+    containerPlaces: {
+        padding: 10
+    },
+    imageContainer: {
+        backgroundColor: 'white',
+        marginRight: 5,
+        overflow: 'hidden',
+        borderColor: '#dddddd', 
+        borderRadius: 25/2,
+        borderWidth: 1
+    },
+    nameAndKm: {
+        backgroundColor: '#fff',
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        overflow: 'hidden',
+        borderColor: '#dddddd',
+        borderRadius: 25,
+        borderWidth: 1,
+        paddingLeft: 10, 
+        paddingRight: 10,
+        borderRadius: 20
     }
-});
+})

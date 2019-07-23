@@ -4,6 +4,8 @@ import React, { Component } from 'react';
 import { StyleSheet, Text, TouchableHighlight, View, Image } from 'react-native';
 
 import Firebase from '../../../utils/Config';
+import Icon from 'react-native-vector-icons/MaterialIcons';
+
 
 export default class LoginScreen extends Component {
 
@@ -18,7 +20,7 @@ export default class LoginScreen extends Component {
 
    const {email, password} = this.state
    const that = this
-   if(email.length > 2 && password.length > 2){
+   if(password.length >= 6){
       Firebase.auth()
       .createUserWithEmailAndPassword(email, password)
       .then(() => {
@@ -27,9 +29,18 @@ export default class LoginScreen extends Component {
         })
         that.props.navigation.navigate('CreateProfile')
       })
-      .catch(error => that.setState({ errorMessage: error.message }))
-   }else{
-     alert("Incorrect length of password and email address")
+      .catch(error => that.setState({ errorMessage: error.message, loading: false }))
+   }else if(email.length <3){
+     that.setState(
+       {loading: false,
+        errorMessage: 'Email length must be greater than 3'
+      })
+   }
+   else{
+     that.setState(
+      {loading: false,
+       errorMessage: 'Password length must be greater than or equal to 6'
+     })
    }
 
   }
@@ -46,17 +57,17 @@ export default class LoginScreen extends Component {
       <Container style={styles.container}>
         {loadingState}
 
-        {
-          this.state.errorMessage &&
-          <Text>{this.state.errorMessage}</Text>
-        }
-
         <View style={{ padding: 20 }}>
-          <View style={{ padding: 10 }}>
             <Image source={require('../../../assets/images/bored2.png')} style={{ height: 140, width: 310 }} />
-          </View>
         </View>
 
+        {
+          this.state.errorMessage &&
+          <View style={{flexDirection: 'row', justifyContent: 'center', alignSelf: 'center'}}>
+            <Icon name="cancel" style={{color: 'red', fontSize: 18}}/>
+            <Text style={{color: 'red', fontSize: 17, marginLeft: 10}}>{this.state.errorMessage}</Text>
+          </View>
+        }
 
         <View style={styles.containerForms}>
           <InputGroup borderType='rounded' style={styles.inputGroupStyle} >
@@ -80,9 +91,9 @@ export default class LoginScreen extends Component {
           <Button full bordered style={styles.buttonContainer} onPress={this.signUp}>
             <Text style={styles.styleSignUp}>SignUp</Text>
           </Button>
-          {/* <TouchableHighlight onPress={() => this.props.navigation.navigate('Login')}>
-                          <Text style = {styles.loginText}>Already User, Login here</Text>
-                      </TouchableHighlight> */}
+          <Button full bordered style={styles.buttonContainer} onPress={() => this.props.navigation.navigate('Login')}>
+            <Text style={styles.styleSignUp}>Already User, Login here</Text>
+          </Button>
         </Form>
       </Container>
 
@@ -98,7 +109,8 @@ const styles = StyleSheet.create({
   buttonContainer: {
     color: '#e8e1e1',
     borderColor: '#fff',
-    borderRadius: 20
+    borderRadius: 20,
+    marginBottom: 15
   },
   styleSignUp: {
     color: '#e8e1e1',

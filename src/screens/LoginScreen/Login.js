@@ -6,16 +6,32 @@ import Firebase from '../../../utils/Config';
 
 export default class LoginScreen extends Component{
 
-    state = {email: '', password: '', errorMessage: null}
+    constructor(props){
+      super(props)
+      this.state = {email: '', 
+               password: '', 
+               errorMessage: null
+             }
+    }
     
     login = () => {
-      //Login logic for Firebase goes here
-    //   Firebase
-    //  .auth()
-    //  .signInWithEmailAndPassword(email, password)
-    //  .then(() => this.props.navigation.navigate('Activity'))
-    //  .catch(error => this.setState({ errorMessage: error.message }))  
-    alert("It works")
+      // Login logic for Firebase goes here
+      Firebase
+     .auth()
+     .signInWithEmailAndPassword(this.state.email, this.state.password)
+     .then(() => this.props.navigation.navigate('Activity'))
+     .catch(error => this.setState({ errorMessage: error.message }))
+    }
+
+    handleEmailAddress = (userEmail) => {
+        this.setState({
+          email: userEmail
+        })
+    }
+    handlePassword = (userPassword) => {
+        this.setState({
+          password: userPassword
+        })
     }
 
     render() {
@@ -27,7 +43,7 @@ export default class LoginScreen extends Component{
                 <Input 
                     autoCapitalize="none"
                     autoCorrect={false}
-                    onChangeText={email => this.setState({email})}
+                    onChangeText={this.handleEmailAddress}
                     value={this.state.email} />
               </Item>
               <Item floatingLabel>
@@ -36,15 +52,13 @@ export default class LoginScreen extends Component{
                   secureTextEntry={true}
                   autoCapitalize="none"
                   autoCorrect={false}
-                  onChangeText={password => this.setState({password})}
+                  onChangeText={this.handlePassword}
                   value={this.state.password}
                 />
               </Item>
-              <TouchableHighlight>
-                <Button full bordered style={styles.buttonContainer} onPress={this.login}>
+                <Button full bordered style={styles.buttonContainer}  onPress={this.login}>
                     <Text>SignIn</Text>
                 </Button>
-              </TouchableHighlight>
               <TouchableHighlight onPress={() => this.props.navigation.navigate('SignUp')}>
                   <Text style = {styles.signUpText}>New User? Sign Up here</Text>
               </TouchableHighlight>

@@ -13,6 +13,7 @@ import Loading from '../src/screens/Loading_Screen/Loading';
 import SignUp from '../src/screens/Signup_Screen/SignUp';
 import CreateProfile from '../src/screens/Profile_Interface/CreateProfile';
 import Promotion from '../src/screens/Promotion_Interface/Promotion';
+import EditProfile from '../src/screens/Profile_Interface/EditProfile'
 
 export const AppSwitchNavigator = createSwitchNavigator({
     Loading: {screen: Loading},
@@ -26,7 +27,8 @@ export const AppSwitchNavigator = createSwitchNavigator({
     ChatContainer: {screen: ChatContainer},
     SingleChat: {screen: SingleChat},
     MyProfile: {screen: MyProfile},
-    Promotion: {screen: Promotion}
+    Promotion: {screen: Promotion},
+    EditProfile: {screen: EditProfile}
 });
 
 export const AppContainer = createAppContainer(AppSwitchNavigator);

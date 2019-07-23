@@ -11,7 +11,7 @@ import Permissions from 'react-native-permissions'
 
             
 import Icon from 'react-native-vector-icons/MaterialIcons';
-// import RNFetchBlob from 'react-native-fetch-blob';
+
 import ImagePicker from 'react-native-image-crop-picker';
 import RNFetchBlob from 'react-native-fetch-blob';
 
@@ -41,7 +41,10 @@ export default class CreateProfile extends Component{
             downloadUrl: '',
             currentUser: null,
             nombre: '',
-            phone: ''
+            phone: '',
+            errorMessage: null,
+            latitude: null,
+            longitude: null
             }
     }
 
@@ -59,30 +62,46 @@ export default class CreateProfile extends Component{
     }
 
     saveToDatabase = () => {
-        const {currentUser, downloadUrl, nombre, phone} = this.state; 
-        const dbPath = Firebase.database().ref().child('/users/' + currentUser.uid);
+        const {currentUser, downloadUrl, nombre, phone} = this.state
+        const dbPath = Firebase.database().ref().child('/users/' + currentUser.uid)
+        const {latitude, longitude} = this.state
         // const dbImagePath = dbPath.child('profileImages');
+
+        const that = this
 
         const dataObject = {
             'nombre': nombre,
             'phone': phone,
-            'profileImageUrl': downloadUrl
-
+            'latitude': latitude,
+            'longitude': longitude
         }
 
-        if( (nombre.length < 2) && (phone.length < 5) && (downloadUrl == null) ){
-            alert('Nombre, Phone and Image input are required')
+        const userImageUrl = {
+            'profileImageUrl': downloadUrl
+        }
+
+
+        if(nombre.length < 2){
+            that.setState({errorMessage: 'Nombre length must be greater than or equal to 2'})
+        }else if(phone.length < 10){
+            that.setState({errorMessage:'Phone number length must be 10'})
+        }else if(downloadUrl.length == 0){
+            that.setState({errorMessage: 'Profile image must be provided'})
         }else{
             this.setState({
                 loading: true
             })
+
             dbPath.set(dataObject).then(() => {
-                this.setState({
-                    loading: false
-                })
-                this.props.navigation.navigate('Activity')   
-            
-            });    
+                let imagePath = dbPath.child('ProfileImages').push()
+                imagePath.set(userImageUrl).then(() => {
+                    this.setState({
+                        loading: false
+                    })
+                    this.props.navigation.navigate('Activity')   
+                })     
+                
+            })
     
         }
 
@@ -109,13 +128,27 @@ export default class CreateProfile extends Component{
           if(response == 'restricted'){
             //  alert('restricted')
           }else if(response == 'authorized'){
-                // alert("Permission granted")
+            this.getCurrentLocation()
           } else {
               alert('Not any one of them')
           }
         })
       }
 
+      getCurrentLocation = () => {
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                const latitude = parseFloat(position.coords.latitude)
+                const longitude = parseFloat(position.coords.longitude)  
+                this.setState({
+                    latitude: latitude,
+                    longitude: longitude  
+                })
+            },
+            error => Alert.alert(error.message),
+            { enableHighAccuracy: false, timeout: 20000, maximumAge: 10000 }
+          );
+    }
 
     openPickerImage = () => {
         this.setState({loading: true})
@@ -151,7 +184,6 @@ export default class CreateProfile extends Component{
                         this.setState({
                             downloadUrl: url
                         })    
-       
                     })
                     return imageRef.getDownloadURL()
                 })
@@ -166,7 +198,6 @@ export default class CreateProfile extends Component{
                 .catch((error) => {
                     console.log(error)
                 })
-                
          })
 
     }
@@ -178,7 +209,10 @@ export default class CreateProfile extends Component{
                            </TouchableHighlight>
                            ) : ( <View>
                                    <TouchableHighlight onPress={this.openPickerImage}>
-                                        <Image source={require('../../../assets/images/profile.png')} style={{height: 140, width: 140}}/>
+                                        <Image 
+                                            source={require('../../../assets/images/profile.png')} 
+                                            style={{height: 140, width: 140}}
+                                        />
                                     </TouchableHighlight>
                            </View>
                            )
@@ -195,8 +229,8 @@ export default class CreateProfile extends Component{
                     <ScrollView>
                         <View style={{padding: 20}}>
                             {/* Logo Image*/}
-
-                        <View style={{padding: 10}}>
+  
+                       <View style={{padding: 10}}>
                             <Image  source={require('../../../assets/images/bored2.png')} style={{height: 140,  width: 310}}/>
                         </View>
                         <View style={styles.profileImage}>
@@ -206,6 +240,14 @@ export default class CreateProfile extends Component{
                              }   
 
                         </View>
+                        {
+                            this.state.errorMessage &&
+                            <View style={{flexDirection: 'row', justifyContent: 'center'}}>
+                                <Icon name="cancel" style={{color: 'red', fontSize: 18}}/>
+                                <Text style={{color: 'red', fontSize: 17, marginLeft: 10}}>{this.state.errorMessage}</Text>
+                            </View>
+                        }
+
                         <InputGroup borderType='rounded' style={styles.inputGroupStyle} >
                             <Input placeholder='Nombre' stle={styles.inputStyle} onChangeText={this.handleName}/>
                         </InputGroup>

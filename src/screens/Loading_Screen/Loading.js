@@ -13,6 +13,7 @@ export default class Loading extends React.Component {
   
   componentDidMount() {
     const userDatabaseReference = this.refDB.child('users')
+    
     const that = this   
     Firebase.auth().onAuthStateChanged(user => {
         if(user){

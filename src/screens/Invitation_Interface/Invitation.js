@@ -2,15 +2,14 @@ import React, {Component} from 'react';
 import {StyleSheet, View, Text, Image, ScrollView, TouchableHighlight, Dimensions, Animated, Platform,
         PermissionsAndroid, Alert} from 'react-native';
 import { Container, Header, Content, Card, CardItem, Thumbnail, Button, Left, Body, Right, Spinner } from 'native-base';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+
+import Icon from 'react-native-vector-icons/MaterialIcons'
 
 import Permissions from 'react-native-permissions'
-import axios from 'axios';
 
-import Firebase from '../../../utils/Config';
-
-import ImageOverlay from "react-native-image-overlay";
-const { width } = Dimensions.get('window');
+import Firebase from '../../../utils/Config'
+import {getDistanceFromLatLonInKm} from '../../../utils/getDistance'
+const { width } = Dimensions.get('window')
 
 
 const API_KEY = 'AIzaSyAizovCeZayRAZthl91it19QYFw1UF3-Jk' 
@@ -21,35 +20,34 @@ export default class Invitation extends Component{
    constructor(props){
        super(props)
        this.state = {
-        currentLongitude: 'unknown',//Initial Longitude
-        currentLatitude: 'unknown',//Initial Latitude
         locationPermission: '',
         locationData: [],
         locationObject: {},
-        latitude: 0.0,
-        longitude: 0.0,
+        currentUserLatitude: null,
+        currentUserLongitude: null,
         customPhotoUrl: ''
         }
         this.actName = this.props.navigation.state.params.actName
-        this.handlePromotionClick = this.handlePromotionClick.bind(this);
+        this.handlePromotionClick = this.handlePromotionClick.bind(this)
+        this.dbRef = Firebase.database().ref()
    }
 
-   getNearbyLocations = (url) => {
-        axios
-        .get(url)
-        .then(data => {
-            this.setState({ locationData:data});
-        })
-        .catch(err => {
-            console.log(err);
-            return null;
-        })
-  }
+//    getNearbyLocations = (url) => {
+//         axios
+//         .get(url)
+//         .then(data => {
+//             this.setState({ locationData:data});
+//         })
+//         .catch(err => {
+//             console.log(err);
+//             return null;
+//         })
+//   }
 
-   handlePromotionClick(activityName, result, lat, lng, image_api, customPhotoUrl){
+   handlePromotionClick(activityName, result){
        this.props.navigation.navigate("Promotion",
-                            {activityName: activityName, result: result, 
-                            lat: lat, lng: lng, image_api: image_api, customPhotoUrl: customPhotoUrl})
+                            {activityName: activityName, result: result})
+
    }
 
    shouldComponentUpdate(nextProps, nextState){
@@ -61,48 +59,111 @@ export default class Invitation extends Component{
         this._requestPermission()
         this.callLocation()
         let that = this
+        const {currentUser} = Firebase.auth()
 
-        // display custom photos if real photoes are not available
-        const customPhotoPath = Firebase.database().ref().child('custom_photos')
-        customPhotoPath.once('value', (dataSnapshot) => {
-          
-            dataSnapshot.forEach((child) => {
-                const data = child.val()
-                const photoUrl = data.photo
-                const rank = data.rank
+        const userPath = this.dbRef.child('users')
+        const currentUserDBPath = userPath.child(currentUser.uid)
 
-                if(this.actName === 'game' && rank === 50){
-                    that.setState({
-                        customPhotoUrl: photoUrl
-                    })    
-                } else if(this.actName === 'bar' && rank === 8){
-                    that.setState({
-                        customPhotoUrl: photoUrl
-                    })    
-                }else if(this.actName === 'movie_theater' && rank === 50){
-                    that.setState({
-                        customPhotoUrl: photoUrl
-                    })    
-                }else if(this.actName === 'gym' && rank === 70){
-                    that.setState({
-                        customPhotoUrl: photoUrl
-                    })    
-                    // asdfasdf
-                }else if(this.actName === 'restaurant' && rank === 5){
-                    that.setState({
-                        customPhotoUrl: photoUrl
-                    })    
-                }else if(this.actName === 'cafe' && rank === 0){
-                    that.setState({
-                        customPhotoUrl: photoUrl
-                    })    
+        const newPlaces = Firebase.database().ref().child('places')
+
+        const promo = newPlaces.child('promotions')
+        
+        newPlaces.once('value', dataSnapshot => {
+            
+
+            // dataSnapshot.child('promotions').child(promoID)
+
+            // dataSnapshot.child('promotions').forEach(promotionDatas => {
+            //     const promoData = promotionDatas.val()
+            //     alert("Promotion Datas are: " + promoData)
+            // })
+            let places = []
+            dataSnapshot.forEach(placesData => {
+                const data = placesData.val()
+                const placeImage = data.image
+                const placeLatitude = data.latitude
+                const placeLongitude = data.longitude
+                const placeName = data.name
+                const placeType = data.type
+                const promotions = data.promotions
+
+
+                const promotionArrays = []
+                // promotionArrays.push(promotions)
+
+                placesData.child('promotions').forEach(promoData => {
+                    const proData = promoData.val()
+                    promotionArrays.push(proData)
+                })
+
+
+                promo.once('value', dbs => {
+                    dbs.forEach(data => {
+                        const promoData = data.val()   
+                        alert("Promo is: " + JSON.stringify(data))
+                    })
+                })
+
+
+                // for (var i = 0; i < promotionArrays.length; i++){
+                //     alert("Promotion data is: " + JSON.stringify(promotionArrays[i].promotions))
+                // }
+
+                // promotionArrays.forEach((data, index) => {
+                //     // const promoData = data.promotion + index
+                //     alert("Promotion data is: " + index)
+                // })
+
+                if(placeType === that.actName){
+
+                    currentUserDBPath.once('value', dataSnap => {
+                        const currentUserData = dataSnap.val()
+                        const currentUserLatitude = currentUserData.latitude
+                        const currentUserLongitude = currentUserData.longitude
+
+                        that.setState({
+                            currentUserLatitude: currentUserLatitude,
+                            currentUserLongitude: currentUserLongitude
+                        })
+
+                        let distanceInBetween = getDistanceFromLatLonInKm(currentUserLatitude, currentUserLongitude,
+                                                                          placeLatitude, placeLongitude)
+
+                        distanceInBetween = distanceInBetween.toFixed(0)
+
+                        const obj = {
+                            image: placeImage,
+                            latitude: placeLatitude,
+                            longitude: placeLongitude,
+                            name: placeName,
+                            type: placeType,
+                            promotion: promotionArrays,
+                            distance: distanceInBetween,
+                            userLatitude: currentUserLatitude,
+                            userLongitude: currentUserLongitude
+                        }
+                        places.push(obj) 
+
+                        
+                    })
+
+                   
+
                 }
+
+
+
             })
 
-        }) 
+            that.setState({
+                locationData: places
+            })
+
+        })
+        
     }
-    
-      // Request permission to access photos
+
+    // Request permission to access photos
       _requestPermission = () => {
         Permissions.request('location').then(response => {
           // Returns once the user has chosen to 'allow' or to 'not allow' access
@@ -128,23 +189,6 @@ export default class Invitation extends Component{
           })
         })
       }
-      _alertForPhotosPermission() {
-        Alert.alert(
-          'Can we access your photos?',
-          'We need access so you can set your profile pic',
-          [
-            {
-              text: 'No way',
-              onPress: () => console.log('Permission denied'),
-              style: 'cancel',
-            },
-            this.state.photoPermission == 'restricted'
-              ? { text: 'OK', onPress: this._requestPermission }
-              : { text: 'Open Settings', onPress: Permissions.openSettings },
-          ],
-        )
-      }
-
 
     getCurrentLocation = () => {
         navigator.geolocation.getCurrentPosition(
@@ -152,11 +196,11 @@ export default class Invitation extends Component{
                 const latitude = parseFloat(position.coords.latitude)
                 const longitude = parseFloat(position.coords.longitude)  
                 this.setState({
-                    latitude: latitude,
-                    longitude: longitude  
+                    currentUserLatitude: latitude,
+                    currentUserLongitude: longitude  
                 });
-                const url = `https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${latitude},${longitude}&radius=2500&type=${this.actName}&key=${API_KEY}` 
-                this.getNearbyLocations(url);
+                // const url = `https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${latitude},${longitude}&radius=2500&type=${this.actName}&key=${API_KEY}` 
+                // this.getNearbyLocations(url);
             },
             error => Alert.alert(error.message),
             { enableHighAccuracy: false, timeout: 20000, maximumAge: 10000 }
@@ -167,93 +211,97 @@ export default class Invitation extends Component{
         
         this.watchID = navigator.geolocation.watchPosition((position) => {
             //Will give you the location on location change    
-            this.setState({ lat:position.coords.latitude, lng: position.coords.longitude});
+            this.setState({ currentUserLatitude:position.coords.latitude, currentUserLongitude: position.coords.longitude});
          });
     }
     componentWillUnmount = () => {
-        navigator.geolocation.clearWatch(this.watchID);
+        navigator.geolocation.clearWatch(this.watchID)
+        this.dbRef.off()
     }
-
 
     render(){
         let position = Animated.divide(this.scrollX, width);
-        const {locationData, customPhotoUrl} = this.state
-        
+        const {locationData, currentUserLatitude, currentUserLongitude} = this.state
+
         return(
                 <View style={styles.containerPeople}>
-                    <View style={styles.peopleNavBar}>
-                        <TouchableHighlight onPress={() => this.props.navigation.navigate('Activity')}>
-                            <Icon name="arrow-left" color="white" size={30}/>
-                        </TouchableHighlight>
-                        <Text style={{color: 'white', fontSize: 16, fontWeight: 'bold', right: 30}}>i
-                            <Text style={{color: 'white', fontSize: 20, textDecorationLine: 'underline',
-                               fontWeight: 'bold', paddingBottom: 10}}>No te aburras</Text>!
-                        </Text>
-                        <TouchableHighlight onPress={() => this.props.navigation.navigate('ChatContainer')}>
-                            <Icon name="message-text" style={{fontSize: 30, color: 'white'}}/>
-                        </TouchableHighlight>
-                    </View>
+                    <View style={styles.navigationBar} elevation={20}>
+                            <TouchableHighlight style={styles.navigationItems} 
+                                onPress={() => this.props.navigation.navigate('Activity')}>
+                                <Icon name="arrow-back" size={30}/>
+                            </TouchableHighlight>
+                            <TouchableHighlight style={styles.navigationItems} onPress={() => this.props.navigation.navigate('Activity')}>
+                                <Icon name="mood" style={{fontSize: 40, color: '#4DDFE5'}}/>
+                            </TouchableHighlight>
+                            <View style={styles.navigationItems}>
+                                <TouchableHighlight onPress={() => this.props.navigation.navigate('ChatContainer')}>
+                                    <Icon name="message" style={{fontSize: 35, color: '#1f1f14'}}/>
+                                </TouchableHighlight>
+                                <Button  
+                                    rounded style={{top: -15, left: 15, backgroundColor: '#4DDFE5',
+                                    padding: 5, width: 20, height: 20, alignContent: 'center'}}>
+                                    <Text style={{color: 'white'}}>2</Text>
+                                </Button>
+                            </View>
+                        </View>
+                        <View style={styles.shadowStyle}></View>
                     
                    <ScrollView>
                     <View style={styles.tabViewStyle}>
-                        <TouchableHighlight>
-                            <Button  onPress={() => this.props.navigation.navigate('People', {activityName: this.actName})} 
-                                    bordered light style={{width: 150, justifyContent: 'center'}}>
-                                <Text style={{color: 'white', fontWeight: "bold"}}>personas</Text>
-                            </Button>
-                        </TouchableHighlight>
-                        <TouchableHighlight>
-                            <Button bordered light style={{width: 150, justifyContent: 'center'}}>
-                                <Text style={{color: 'white', fontWeight: "bold"}}>invitaciones</Text>
-                            </Button>
-                        </TouchableHighlight>
+                    <View style={styles.singleButtonContainer}>
+                            <TouchableHighlight>
+                                <Button   onPress={() => this.props.navigation.navigate('People', {activityName: this.actName})} 
+                                rounded style={{backgroundColor: '#fff', padding: 5, width: 150, alignItems: 'center'}}>
+                                    <Text style={{marginLeft: 15, fontWeight: 'bold', fontSize: 17, alignSelf: 'center'}}>Person</Text>
+                                </Button>
+                            </TouchableHighlight>
+                        </View>
+                        <View style={styles.singleButtonContainer}>
+                            <TouchableHighlight>
+                                <Button  
+                                rounded style={{backgroundColor: '#4DDFE5', padding: 5, width: 150, alignItems: 'center'}}>
+                                    <Text style={styles.textInsideButton}>Invitation</Text>
+                                </Button>
+                            </TouchableHighlight>
+                            
+                        </View>
+
                     </View>
                     {
                             locationData.length === 0 ? (
                                 <View style={{justifyContent: 'center', padding: 60}}>
-                                    <Text style={{color: 'red', fontSize: 22}}>Loading invitaciones</Text>
+                                    <Text style={{color: 'red', fontSize: 22}}>Loading Invitations</Text>
                                     <Spinner color="red"/>
                                 </View>
                             ): (
-                                locationData.data.results.map((result, index)=>{
+                                locationData.map((result, index)=>{
                                     return (
-                                        <View style={{backgroundColor: 'white', padding: 10, marginTop: 5, marginRight: 5, borderRadius: 25/2}}>
-                                             {
-                                                 result.photos ? 
-                                                    (
-                                                    <View>
-                                                        <TouchableHighlight 
-                                                           onPress={() => this.handlePromotionClick(this.actName, result, 
-                                                            this.state.latitude, this.state.longitude, _google_image_api)}>
-                                                            <Image
-                                                                source = {{uri: `${_google_image_api}${result.photos[0].photo_reference}&key=${API_KEY}`}}
-                                                                style={{width: width-50, height: 200, resizeMode:'cover'}}
-                                                            />
-                                                        </TouchableHighlight>
-                                                    </View>
-                                                )
-                                                 : (
-                                                    // display the images from Firebase Database...
-                                                    <View>
-                                                        <TouchableHighlight
-                                                          onPress={() => this.handlePromotionClick(this.actName, result, 
-                                                                          this.state.latitude, this.state.longitude, customPhotoUrl)}>
-                                                            {/* <Image
-                                                                source={require('../../../assets/images/kfc.jpg')}
-                                                                style={{width: width-50, height: 150}}
-                                                            /> */}
-                                                            <Image
-                                                                source={{uri: `${customPhotoUrl}`}}
-                                                                style={{width: width-50, height: 200, resizeMode:'cover'}}
-                                                            />
-                                                        </TouchableHighlight>
-                                                    </View>
-                                                 )
-                                             }
-                                              <Text style={{marginTop: 5, fontSize: 20}}>{result.name}</Text>
-                                              {/* <Text>Photo References: {result.photos.photo_reference}</Text> */}
-                                              <Text>{result.vicinity}</Text> 
-
+                                        <View style={styles.containerPlaces}>
+                                            <View style={styles.imageContainer}>
+                                                <TouchableHighlight 
+                                                       onPress={() => this.handlePromotionClick(this.actName, result)}
+                                                    >
+                                                    <Image
+                                                        source = {{uri: result.image}}
+                                                        style={{width: width-50, height: 250, resizeMode:'cover'}}
+                                                    />
+                                                </TouchableHighlight>
+                                            </View>
+                                            <View style={styles.nameAndKm}>
+                                                <Text style={{marginTop: 5, fontSize: 18, fontWeight: 'bold'}}>{result.name}</Text>
+                                                {/* <Text>Photo References: {result.photos.photo_reference}</Text> */}
+                                                { result.distance < 1000 ? (   
+                                                        result.distance == 0 ? (
+                                                            <Text style={{fontSize: 16, padding: 5}}>{result.distance} m</Text>
+                                                        ): (
+                                                            <Text style={{fontSize: 16, padding: 5}}>You are in the same place</Text>
+                                                        )
+                                                    ) :
+                                                    (   
+                                                        <Text style={{fontSize: 16, padding: 5}}>{(result.distance)/1000} km</Text>
+                                                    )
+                                                }
+                                            </View>
                                         </View>
                                     )
                                 })
@@ -272,13 +320,34 @@ export default class Invitation extends Component{
 const styles = StyleSheet.create({
     containerPeople: {
         flex: 1,
-        backgroundColor: '#202020',
+        backgroundColor: '#fff',
         padding: 10
     },
     peopleNavBar: {
         justifyContent: 'space-between',
         flexDirection: 'row',
         height: 60
+    },
+    navigationBar: {
+        height: 60,
+       flexDirection: 'row',
+       justifyContent: 'space-between',
+       elevation: 2,
+       marginRight: 5
+   },
+   navigationItems: {
+        marginVertical: 10
+    },
+    shadowStyle: {
+        marginBottom: 30,
+        height: 1,
+        backgroundColor: '#d6d6c2'
+    },
+    textInsideButton: {
+        marginLeft: 15,
+        fontWeight: 'bold',
+        fontSize: 17,
+        color: '#fff'
     },
     tabViewStyle: {
         flexDirection:'row',
@@ -287,6 +356,29 @@ const styles = StyleSheet.create({
     peopleImageStyle: {
         backgroundColor: 'white',
         marginTop: 20
+    },
+    containerPlaces: {
+        padding: 10
+    },
+    imageContainer: {
+        backgroundColor: 'white',
+        marginRight: 5,
+        overflow: 'hidden',
+        borderColor: '#dddddd', 
+        borderRadius: 25/2,
+        borderWidth: 1
+    },
+    nameAndKm: {
+        backgroundColor: '#fff',
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        overflow: 'hidden',
+        borderColor: '#dddddd',
+        borderRadius: 25,
+        borderWidth: 1,
+        paddingLeft: 10, 
+        paddingRight: 10,
+        borderRadius: 20
     },
     backgroundContainer:{
         top: 0,

@@ -9,14 +9,17 @@ import {
 class Category extends Component {
     render() {
         return (
-            <View style={styles.imageContainer}>
-                <View style={{ flex: 2 }}>
+            <View style={{width: 170, marginLeft: 5}}>
+                <View style={styles.imageContainer}>
                     <Image source={this.props.imageUri}
                         style={{ flex: 1, width: null, height: null, resizeMode: 'cover' }}
                     />
                 </View>
+                <View style={{ flex: 1, paddingLeft: 10, paddingTop: 10 }}>
+                    <Text style={styles.promoText}>{this.props.text}</Text>
+                </View>
             </View>
-        );
+        )
     }
 }
 export default Category;
@@ -24,16 +27,19 @@ export default Category;
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        alignItems: 'center',
-        justifyContent: 'center'
     },
     imageContainer: {
-        height: 130,
-        width: 200, 
+        flex: 2,
+        height: 200,
+        width: 160,
         marginRight: 5, 
         overflow: 'hidden', 
         borderColor: '#dddddd', 
         borderRadius: 20, 
         borderWidth: 2
+    },
+    promoText: {
+        fontSize: 18,
+        fontWeight: 'bold'
     }
 });
