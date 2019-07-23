@@ -8,10 +8,8 @@ import moment from "moment";
 import Firebase from '../../../utils/Config';
 
 import {formatTime} from '../../../utils/getTimeAgo'
+import TimeAgo from 'react-native-timeago';
 import firebase from 'firebase'
-
-import ImagePicker from 'react-native-image-crop-picker';
-import RNFetchBlob from 'react-native-fetch-blob';
 
 
 
@@ -23,8 +21,7 @@ export default class Activities extends Component{
         this.state = { currentCount: 3600, currentUser: null, currentTime: moment(), endTime: moment().add(180, 'seconds'), 
                        timeRemaining: 36000, activityName: '', loading: false, startTime: "a few seconds ago",
                        gameCount: 0, drinkCount: 0, playCount: 0, theatreCount: 0, coffeeCount: 0, foodCount: 0, 
-                       countActivity: 0, activities: [], visible: false, minutesLeft: 0, isFullTime: false,
-                       downloadUrl: null
+                       countActivity: 0, activities: [], visible: false, minutesLeft: 0, isFullTime: false
                     }
         this.handleActivityClick = this.handleActivityClick.bind(this);
         this.dbRef = Firebase.database().ref()
@@ -63,79 +60,6 @@ export default class Activities extends Component{
         
     }
 
-    openPickerImage = () => {
-        const {currentUser} = this.state
-        
-        
-        this.setState({loading: true})
-        const Blob = RNFetchBlob.polyfill.Blob
-        const fs = RNFetchBlob.fs
-    
-        window.XMLHttpRequest = RNFetchBlob.polyfill.XMLHttpRequest
-        window.Blob = Blob;
-        ImagePicker.openPicker({
-            width: 300,
-            height: 300,
-            cropping: true,
-            mediaType: 'photo'
-        }).then(image => {
-            const ImagePath = image.path
-            // console.log("Image Data are: ", image)
-            let uploadBlob = null
-            const imageRef = Firebase.storage().ref().child('activities/') 
-            let mime = 'image/jpg'
-            // alert(image)
-            fs.readFile(ImagePath, 'base64')
-                .then((data) => {
-                    //  console.log(data)
-                     return Blob.build(data, {type: `${mime};BASE64`})   
-                })
-                .then((blob) => {
-                    uploadBlob = blob
-                    return imageRef.put(blob, {contentType: mime})
-                })
-                .then(() => {
-                    uploadBlob.close()
-                    imageRef.getDownloadURL().then((url) => {
-                        this.setState({
-                            downloadUrl: url
-                        })
-                    })
-                    return imageRef.getDownloadURL()
-                })
-                .then((url) => {
-                    let userData = {}
-                    let obj = {}
-                    obj["loading"] = false
-                    obj["dp"] = url
-                    this.setState(obj)
-                    this.saveChanges()
-                    
-                })
-                .catch((error) => {
-                    console.log(error)
-                })
-                
-         })
-    
-    }
-
-
-    saveChanges = () => {
-            const {downloadUrl} = this.state
-            const dbPath = Firebase.database().ref().child('activityPool/' + this.state.currentUser)
-            let activityPoolPath = dbPath.push()
-            
-            const activityPoolData = {
-                'image': downloadUrl,
-                'type': 'movie',
-                'description': 'Watch a movie',
-                'active': true
-            }
-
-            activityPoolPath.set(activityPoolData)
-        
-        }
 
     handleActivityClick(actName){
 
@@ -184,11 +108,6 @@ export default class Activities extends Component{
                         actExists = true
                         that.setState({isFullTime: true})
         
-                    }
-                    // updated addition
-                    else{
-                        actExists = true
-                        this.openPickerImage()
                     }
                 }                
                 if(actExists === true){
