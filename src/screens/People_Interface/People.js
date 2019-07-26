@@ -56,7 +56,7 @@ export default class People extends Component{
                         const userID = peoples[i].id
 
                         userDatabaseReference.child(peoples[i].id).once("value", (snapShot) => {
-                            let data = snapShot.val()
+                            let profileData = snapShot.val()
                             const photoArray = []
                             snapShot.child("ProfileImages").forEach(profileData => {
                                 const photoData = profileData.val()
@@ -64,29 +64,24 @@ export default class People extends Component{
                                     image: photoData.profileImageUrl
                                 }
                                 photoArray.push(profilePhotos)
-                                // alert("Profile photos are: " + profilePhotos)
                             })
-
-                            
-                            // snapshot.child("ProfileImages").once('value', dts => {
-                            //     const dataProfileImage = dts.val()
-                            //     alert("Profile data is: " + JSON.stringify(dataProfileImage))
-                            // })
-                            // alert("Profile Datas are: " + JSON.stringify(data))
-
-                            let personObject = {
-                                nombre: data.nombre,
-                                phone: data.phone,
-                                profileImageUrl: data.profileImageUrl,
-                                userId: userID,
-                                photos: photoArray
+                            if(snapShot.exists()){
+                                let personObject = {
+                                    nombre: profileData.nombre,
+                                    phone: profileData.phone,
+                                    userId: userID,
+                                    photos: photoArray
+                                }
+    
+                                if(userID !== currentUser.uid){
+                                    peopleArray.push(personObject) 
+                                }                                
+                                that.setState({
+                                    people: peopleArray,
+                                    loading: false
+                                })
                             }
 
-                            peopleArray.push(personObject)
-                            that.setState({
-                                people: peopleArray,
-                                loading: false
-                            })
                             }
                         )
                         // }
@@ -120,10 +115,14 @@ export default class People extends Component{
                             </TouchableHighlight>
                             <TouchableHighlight style={styles.navigationItems} onPress={() => this.props.navigation.navigate('Activity')}>
                                 <Icon name="mood" style={{fontSize: 40, color: '#4DDFE5'}}/>
+                               
                             </TouchableHighlight>
                             <View style={styles.navigationItems}>
                                 <TouchableHighlight onPress={() => this.props.navigation.navigate('ChatContainer')}>
-                                    <Icon name="message" style={{fontSize: 35, color: '#1f1f14'}}/>
+                                <Image 
+                                    source={require('../../../assets/images/message_single_two.png')}
+                                    style={{width: 40, height: 40}}
+                                   />
                                 </TouchableHighlight>
                                 <Button  
                                     rounded style={{top: -15, left: 15, backgroundColor: '#4DDFE5',
@@ -165,8 +164,8 @@ export default class People extends Component{
                         {
                               loading ? (
                                   <View style={{padding: 60}}>
-                                      <Text style={{color: 'red', fontSize: 22}}>Loading People</Text>
-                                      <Spinner color="red"/>
+                                      <Text style={{color: '#21CEFF', fontSize: 22}}>Loading People</Text>
+                                      <Spinner color="#21CEFF"/>
                                   </View>
 
                               ) : (
@@ -206,16 +205,15 @@ export default class People extends Component{
                                                                         >
                                                                         <View style={{alignItems: 'center'}}>
                                                                             <View style={{flexDirection: 'row', alignSelf: 'center'}}>
-                                                                                <Button rounded bordered
-                                                                                        style={{width: 50,backgroundColor: 'white',
-                                                                                            height: 50, justifyContent: 'center', borderColor: 'green'}}>
-                                                                                        <TouchableHighlight 
-                                                                                           onPress={() => this.props.navigation.navigate('SingleChat', {user: data.userId, actName: this.actName})}
-                                                                                           >
-                                                                                            <Image source={require('../../../assets/images/messages.png')}
-                                                                                                style={{width: 30, height: 30}}/>
-                                                                                        </TouchableHighlight>
-                                                                                </Button>
+                                                                                <TouchableHighlight 
+                                                                                    onPress={() => this.props.navigation.navigate('SingleChat', {user: data.userId, actName: this.actName})}
+                                                                                    style={styles.styleMessage}
+                                                                                    >
+                                                                                        <Image
+                                                                                                source={require('../../../assets/images/message_single_two.png')}
+                                                                                                style={{width: 40, height: 40}}
+                                                                                            />
+                                                                                </TouchableHighlight>
                                                                             </View>
                             
                                                                             <View style={{flexDirection: 'row'}}>
@@ -329,6 +327,13 @@ const styles = StyleSheet.create({
     peopleImageStyle: {
         backgroundColor: 'white',
         marginTop: 20
+    },
+    styleMessage: {
+        height: 35,
+        width: 35,
+        overflow: 'hidden',
+        borderColor: '#dddddd',
+        borderRadius: 50   
     },
     singleButtonContainer: {
         margin: 10,

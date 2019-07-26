@@ -108,7 +108,11 @@ export default class Profile extends Component{
                     </View>
                     <View style={styles.navigationItems}>
                         <TouchableHighlight onPress={() => this.props.navigation.navigate('ChatContainer')}>
-                            <Icon name="message" style={{fontSize: 30, color: '#1f1f14'}}/>
+                            <Image 
+                                source={require('../../../assets/images/message_single_two.png')}
+                                style={{width: 40, height: 40}}
+                            />
+                            {/* <Icon name="message" style={{fontSize: 30, color: '#1f1f14'}}/> */}
                         </TouchableHighlight>
                         <Button  
                             rounded style={{top: -15, left: 15, backgroundColor: '#4DDFE5',
@@ -123,12 +127,11 @@ export default class Profile extends Component{
                 <ScrollView>
 
                     <View style={{marginTop: 5, backgroundColor: '#fff'}}>
-                        
-                            <View>
+                            <View>  
                                 {
                                     loading ? (
                                            <View style={[styles.imageContainer, {justifyContent: 'center'}]}>
-                                               <Spinner color="red"/>
+                                               <Spinner color="#21CEFF"/>
                                            </View>
                                         ):(
                                             <ScrollView
@@ -159,15 +162,17 @@ export default class Profile extends Component{
                                                 >
                                                 <View style={{alignItems: 'center'}}>
                                                     <View style={{flexDirection: 'row', alignSelf: 'center'}}>
-                                                        <Button rounded bordered
-                                                                style={{width: 50,backgroundColor: 'white',
-                                                                    height: 50, justifyContent: 'center', borderColor: 'green'}}>
-                                                                <TouchableHighlight onPress={() => this.props.navigation.navigate('SingleChat', {actName: this.actName})}>
-                                                                    <Image source={require('../../../assets/images/messages.png')}
-                                                                        style={{width: 30, height: 30}}/>
-                                                                </TouchableHighlight>
-                                                        </Button>
-                                                    </View>
+                                                        <TouchableHighlight
+                                                             onPress={() => this.props.navigation.navigate('SingleChat', 
+                                                             {actName: this.actName})}
+                                                             style={styles.styleMessage}
+                                                             >
+                                                            <Image 
+                                                                source={require('../../../assets/images/message_single_two.png')}
+                                                                style={{width: 40, height: 40}}
+                                                            />
+                                                        </TouchableHighlight>
+                                                     </View>
             
                                                     <View style={{flexDirection: 'row'}}>
                                                         {/* Display the dots for the profile Images  */}
@@ -237,7 +242,6 @@ export default class Profile extends Component{
 
                 </ScrollView>
  
-
             </View>
         );
     }
@@ -264,6 +268,13 @@ const styles = StyleSheet.create({
         marginTop: 5,
         backgroundColor: '#edece8',
         padding: 30
+    },
+    styleMessage: {
+        height: 35,
+        width: 35,
+        overflow: 'hidden',
+        borderColor: '#dddddd',
+        borderRadius: 50   
     },
     userFullName: {
         color: '#1cc9be',

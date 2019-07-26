@@ -13,22 +13,24 @@ export default class Loading extends React.Component {
   
   componentDidMount() {
     const userDatabaseReference = this.refDB.child('users')
-    
     const that = this   
     Firebase.auth().onAuthStateChanged(user => {
         if(user){
             let currentUserDB = userDatabaseReference.child(user.uid)
-            currentUserDB.on('value', (snapShot) => {
-              let exists = snapShot.exists()  
+              currentUserDB.on('value', (snapShot) => {
+
+              const profileImageInfo = snapShot.child("ProfileImages")
+
+              let exists = profileImageInfo.exists()
+
               if(exists){
                 that.props.navigation.navigate('Activity')
-                }
-              else{
-                that.props.navigation.navigate('CreateProfile')
+                }else{
+                that.props.navigation.navigate('AddBestPicture')
               }
             })
         }else{
-          that.props.navigation.navigate('SignUp')  
+          that.props.navigation.navigate('SignUp')
         }
       })
   }
@@ -39,8 +41,8 @@ export default class Loading extends React.Component {
     render() {
     return (
       <View style={styles.container}>
-          <Text style={{color:'#e93766', fontSize: 40}}>Loading</Text>
-          <ActivityIndicator color='#e93766' size="large" />
+          <Text style={{color:'#21CEFF', fontSize: 40}}>Loading...</Text>
+          <ActivityIndicator color='#21CEFF' size="large" />
       </View>
     )
   }
@@ -48,7 +50,7 @@ export default class Loading extends React.Component {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#000',
+    backgroundColor: '#fff',
     justifyContent: 'center',
     alignItems: 'center',
   }

@@ -170,7 +170,10 @@ export default class Promotion extends Component{
                         </TouchableHighlight>
                         <View style={styles.navigationItems}>
                             <TouchableHighlight onPress={() => this.props.navigation.navigate('ChatContainer')}>
-                                <Icon name="message" style={{fontSize: 35, color: '#1f1f14'}}/>
+                                <Image 
+                                    source={require('../../../assets/images/message_single_two.png')}
+                                    style={{width: 40, height: 40}}
+                                />
                             </TouchableHighlight>
                             <Button  
                                 rounded style={{top: -15, left: 15, backgroundColor: '#4DDFE5',

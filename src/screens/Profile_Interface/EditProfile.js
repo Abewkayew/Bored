@@ -1,18 +1,17 @@
 import { Container, Item, Form, Input, Button, Label, Spinner, InputGroup } from "native-base";
-import React, { Component } from 'react';
+import React, { Component } from 'react'
 
 import { StyleSheet, Text, TouchableHighlight, View, Image, ScrollView, Animated, Dimensions } from 'react-native';
 
-import Firebase from '../../../utils/Config';
+import Firebase from '../../../utils/Config'
 
 import Icon from 'react-native-vector-icons/MaterialIcons'
 
-import ImageOverlay from "react-native-image-overlay";
-import ImagePicker from 'react-native-image-crop-picker';
-import RNFetchBlob from 'react-native-fetch-blob';
-import { throwStatement } from "@babel/types";
+import ImageOverlay from "react-native-image-overlay"
+import ImagePicker from 'react-native-image-crop-picker'
+import RNFetchBlob from 'react-native-fetch-blob'
 
-const { width } = Dimensions.get('window');
+const { width } = Dimensions.get('window')
 
 
 export default class EditProfile extends Component {
@@ -172,7 +171,7 @@ export default class EditProfile extends Component {
                 obj["dp"] = url
                 this.setState(obj)
                 this.saveChanges()
-                
+            
             })
             .catch((error) => {
                 console.log(error)

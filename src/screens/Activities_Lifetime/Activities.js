@@ -145,7 +145,6 @@ export default class Activities extends Component{
         const {currentUser} = Firebase.auth();
         const userActs = this.dbRef.child('users/' + currentUser.uid + '/activities')
 
-
         userActs.once('value', snapshot => {
             const dataExists = snapshot.exists()
             if(dataExists){
@@ -305,10 +304,7 @@ export default class Activities extends Component{
                         playCount: countTotal - 1
                     })
                 }
-            }    
-
-
-        
+            }       
         })
 
         totalFoodUsers.on('value', snapShot => {
@@ -397,19 +393,25 @@ export default class Activities extends Component{
                 </DialogContent>
             </Dialog>
 
-
                         <ScrollView>
                         {/*  Navigation bar*/}
                         <View style={styles.navigationBar} elevation={20}>
                             <TouchableHighlight onPress={() => this.props.navigation.navigate('MyProfile')} style={styles.navigationItems}>
-                                <Icon name="account-circle" style={{fontSize: 35, color: '#1f1f14'}} />
+                                {/* <Icon name="account-circle" style={{fontSize: 35, color: '#1f1f14'}} /> */}
+                                <Image
+                                    source={require('../../../assets/images/man_2.png')}
+                                    style={{width: 35, height: 40}}
+                                />
                             </TouchableHighlight>
                             <TouchableHighlight style={styles.navigationItems} onPress={() => this.props.navigation.navigate('Activity')}>
                                 <Icon name="mood" style={{fontSize: 40, color: '#4DDFE5'}}/>
                             </TouchableHighlight>
                             <View style={styles.navigationItems}>
                                 <TouchableHighlight onPress={() => this.props.navigation.navigate('ChatContainer')}>
-                                    <Icon name="message" style={{fontSize: 35, color: '#1f1f14'}}/>
+                                   <Image 
+                                    source={require('../../../assets/images/message_single_two.png')}
+                                    style={{width: 40, height: 40}}
+                                   />
                                 </TouchableHighlight>
                                 <Button  
                                     rounded style={{top: -15, left: 15, backgroundColor: '#4DDFE5',
@@ -421,17 +423,17 @@ export default class Activities extends Component{
                         <View style={styles.shadowStyle}></View>
                         <View style={styles.displayAllcards}>
                         <Text style={styles.textTitle}>What would you like to do?</Text>
-                        <Text style={{alignContent: 'center',  fontSize: 16, marginTop: 5,
-                                marginHorizontal: 30, marginVertical: 10}}>
+                        <Text style={{alignContent: 'center',  fontSize: 18, marginTop: 15,
+                                marginHorizontal: 40}}>
                            Choose your favorite activity and find people who want the same!
                         </Text>
 
                         {
                           loading ? (
                               <View style={{justifyContent:'center', flexDirection: 'row'}}>
-                                <Spinner color="red"/> 
-                                 <View style={{marginLeft: 10, marginTop: 30}}>
-                                     <Text style={{color: 'red', fontSize: 18, fontWeight: 'bold'}}>Connecting...</Text>  
+                                <Spinner color="#21CEFF"/> 
+                                 <View style={{marginLeft: 10, marginTop: 10}}>
+                                     <Text style={{color: '#21CEFF', fontSize: 18, fontWeight: 'bold'}}>Connecting...</Text>  
                                  </View>
                               </View>
                             ):(
@@ -441,132 +443,88 @@ export default class Activities extends Component{
 
                         <View style={styles.displayActivities}>
                             <View style={styles.displayEachActivities}>
-                                
-                                <TouchableHighlight onPress={() => this.handleActivityClick('game')}>
-                                    <Card>
-                                        <CardItem cardBody bordered>
-                                                <Image source={require('../../../assets/images/ico_game.jpg')} style={{height: 120, width: 150}}/>
-                                        </CardItem>
-                                        <CardItem bordered>
-                                        <Body style={{flex: 1, flexDirection: 'row', justifyContent: 'center'}}>
-                                            <Icon name="account-circle" style={{fontSize: 24}}/>
-                                            <Text style={isFullTime ? {fontSize:18, marginLeft: 5}: {fontSize: 18, color: 'red'}}>
-                                               {
-                                                   this.state.gameCount
-                                               }
-                                            </Text>
-                                        </Body>
-                                        </CardItem>
-                                    </Card>
-                                </TouchableHighlight>
-    
-                                <TouchableHighlight onPress={() => this.handleActivityClick('movie_theater')}>
-                                    <Card>
-                                        <CardItem cardBody bordered>
-                                            <Image source={require('../../../assets/images/ico_teatro.jpg')} style={{height: 120, width: 150}}/>
-                                        </CardItem>
-                                        <CardItem bordered>
-                                        <Body style={{flex: 1, flexDirection: 'row', justifyContent: 'center'}}>
-                                            <Icon name="account-circle" style={{fontSize: 24}}/>
-                                            <Text style={{fontSize: 18, marginLeft: 5}}>
-                                                {
-                                                    this.state.theatreCount
-                                                }
-                                            </Text>
-                                        </Body>
-                                        </CardItem>
-                                    </Card>
-                                </TouchableHighlight>
-    
-    
-                            </View>
-    
-                                    {/* Second Card View */}
-    
-                        <View style={styles.displayEachActivities}>
-                            <TouchableHighlight onPress={() => this.handleActivityClick('bar')}>
-                                    <Card>
-                                        <CardItem cardBody bordered>
-                                            <Image source={require('../../../assets/images/ico_chela.jpg')} style={{height: 120, width: 150}}/>
-                                        </CardItem>
-                                        <CardItem bordered>
-                                        <Body style={{flex: 1, flexDirection: 'row', justifyContent: 'center'}}>
-                                            <Icon name="account-circle" style={{fontSize: 24}}/>
-                                            <Text style={isFullTime ? {fontSize:18, marginLeft: 5}: {fontSize: 18, color: 'red'}}>
-                                                {
-                                                    this.state.drinkCount
-                                                }
-                                            </Text>
-                                        </Body>
-                                        </CardItem>
-                                    </Card>
-                            </TouchableHighlight>
-    
-                            <TouchableHighlight onPress={() => this.handleActivityClick('gym')}>
-                                    <Card>
-                                        <CardItem cardBody bordered>
-                                            <Image source={require('../../../assets/images/ico_deporte.jpg')} style={{height: 120, width: 150}}/>
-                                        </CardItem>
-                                        <CardItem bordered>
-                                        <Body style={{flex: 1, flexDirection: 'row', justifyContent: 'center'}}>
-                                            <Icon name="account-circle" style={{fontSize: 24}}/>
-                                            <Text style={{fontSize: 18, marginLeft: 5}}>
-                                                {
-                                                    this.state.playCount
-                                                }
-                                            </Text>
-                                        </Body>
-                                        </CardItem>
-                                    </Card>
-                            </TouchableHighlight>
-    
-                            </View>
-    
-                            <View style={styles.displayEachActivities}>
-                                {/* <Text style={{color: 'white'}}>Left Side</Text>
-                                <Text style={{color: 'white'}}>Right Side</Text> */}
-                                
-                                
-                                <TouchableHighlight onPress={() => this.handleActivityClick('cafe')}>
-                                    <Card>
-                                        <CardItem cardBody bordered>
-                                            <Image source={require('../../../assets/images/ico_cafe.jpg')} style={{height: 120, width: 150}}/>
-                                        </CardItem>
-                                        <CardItem bordered>
-                                        <Body style={{flex: 1, flexDirection: 'row', justifyContent: 'center'}}>
-                                            <Icon name="account-circle" style={{fontSize: 24}}/>
+                                <View style={styles.containSingleActivity} elevation={5}>
+                                    <Text style={{alignSelf: 'center', fontSize: 17, fontWeight: '500', marginBottom: 5}}>Go for a coffee</Text>
+                                    <TouchableHighlight 
+                                        onPress={() => this.handleActivityClick('cafe')}
+                                        style={styles.imageContainer}
+                                        >
+                                     <Image source={require('../../../assets/images/ico_cafe.jpg')} style={{height: 150, width: 150}}/>
+                                    </TouchableHighlight>
+                                    <View style={{flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginVertical: 10}}>
+                                        <Icon name="account-circle" style={{fontSize: 24}}/>
                                             <Text style={{fontSize: 18, marginLeft: 5}}>
                                                 {
                                                     this.state.coffeeCount
                                                 }
                                             </Text>
-                                        </Body>
-                                        </CardItem>
-                                    </Card>
-                                </TouchableHighlight>
-    
-                                <TouchableHighlight onPress={() => this.handleActivityClick('restaurant')}>
-                                    <Card>
-                                        <CardItem cardBody bordered>
-                                            <Image source={require('../../../assets/images/ico_restaurante.jpg')} style={{height: 120, width: 150}}/>
-                                        </CardItem>
-                                        <CardItem bordered>
-                                        <Body style={{flex: 1, flexDirection: 'row', justifyContent: 'center'}}>
-                                            <Icon name="account-circle" style={{fontSize: 24}}/>
-                                            <Text style={{fontSize: 18, marginLeft: 5}}>
-                                                {
-                                                    this.state.foodCount
-                                                }
-                                            </Text>
-                                        </Body>
-                                        </CardItem>
-                                    </Card>
+                                    </View>
+                                </View>
+                                <View style={styles.containSingleActivity}>
+                                    <Text style={{alignSelf: 'center', fontSize: 17, fontWeight: '500', marginBottom: 5}}>Watch a movie</Text>
+                                    <TouchableHighlight 
+                                        onPress={() => this.handleActivityClick('movie_theater')}
+                                        style={styles.imageContainer}
+                                        >
+                                    <Image source={require('../../../assets/images/ico_teatro.jpg')} style={{height: 150, width: 150}}/>
                                     </TouchableHighlight>
-    
-                                </View>
-                                
-                                </View>
+                                    <View style={{flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginVertical: 10}}>
+                                        <Icon name="account-circle" style={{fontSize: 24}}/>
+                                        <Text style={{fontSize: 18, marginLeft: 5}}>
+                                            {
+                                                this.state.theatreCount
+                                            }
+                                        </Text>
+                                    </View>
+                                </View>                                                                        
                             </View>
+    
+                                            {/* second card view  */}
+
+                        <View style={styles.displayEachActivities}>
+                                <View style={styles.containSingleActivity}>
+                                    <Text style={{alignSelf: 'center', fontSize: 17, fontWeight: '500', marginBottom: 5}}>Go for a drink</Text>
+                                    <TouchableHighlight 
+                                        onPress={() => this.handleActivityClick('bar')}
+                                        style={styles.imageContainer}
+                                        >
+                                        <Image source={require('../../../assets/images/ico_chela.jpg')} style={{height: 120, width: 150}}/>                                          
+                                    </TouchableHighlight>
+                                    <View style={{flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginVertical: 10}}>
+                                        <Icon name="account-circle" style={{fontSize: 24}}/>
+                                        <Text style={{fontSize:18, marginLeft: 5}}>
+                                            {
+                                                this.state.drinkCount
+                                            }
+                                        </Text>
+                                    </View>
+                                </View>
+                                <View style={styles.containSingleActivity}>
+                                    <Text style={{alignSelf: 'center', fontSize: 17, fontWeight: '500', marginBottom: 5}}>Go to eat</Text>
+                                        <TouchableHighlight 
+                                            onPress={() => this.handleActivityClick('restaurant')}
+                                            style={styles.imageContainer}
+                                            >
+                                    <Image source={require('../../../assets/images/ico_restaurante.jpg')} style={{height: 120, width: 150}}/>
+                                        
+                                    </TouchableHighlight>
+                                    <View style={{flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginVertical: 10}}>
+                                        <Icon name="account-circle" style={{fontSize: 24}}/>
+                                        <Text style={{fontSize: 18, marginLeft: 5}}>
+                                            {
+                                                this.state.foodCount
+                                            }
+                                        </Text>
+                                    </View>
+                                </View>                                                                        
+                            </View>
+
+            
+                        </View>
+                        
+                        
+                        {/* end container */}
+                         </View>
     
                             {/* end activity chooser */}
     
@@ -599,6 +557,18 @@ const styles = StyleSheet.create({
     navigationItems: {
         marginVertical: 15
     },
+    imageContainer: {
+        height: 150,
+        overflow: 'hidden',
+        borderColor: '#dddddd',
+        borderRadius: 20,
+        borderWidth: 1,
+        alignSelf: 'center'
+    },
+    containSingleActivity:{
+        marginVertical: 15, 
+        marginHorizontal: 10,
+    },
     logoImage: {
         flex: 1,
     },
@@ -614,17 +584,18 @@ const styles = StyleSheet.create({
         fontSize: 23,
     },
     displayActivities: {
-        flex: 1,
         marginTop: 3,
         marginRight: 5,
-        marginLeft: 5
+        marginLeft: 5,
+        paddingBottom: 50
     },
     displayEachActivities: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         height: 200,
         paddingTop: 20,
-        borderRadius: 10
+        borderRadius: 10,
+        marginVertical: 15
     },
     dialogContentTextStyle: {
         fontSize: 18, 

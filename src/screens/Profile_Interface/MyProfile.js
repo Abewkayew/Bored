@@ -112,7 +112,10 @@ export default class MyProfile extends Component{
                     </TouchableHighlight>
                     <View style={styles.navigationItems}>
                         <TouchableHighlight onPress={() => this.props.navigation.navigate('ChatContainer')}>
-                            <Icon name="message" style={{fontSize: 35, color: '#1f1f14'}}/>
+                            <Image 
+                                source={require('../../../assets/images/message_single_two.png')}
+                                style={{width: 40, height: 40}}
+                                />
                         </TouchableHighlight>
                         <Button  
                             rounded style={{top: -15, left: 15, backgroundColor: '#4DDFE5',
@@ -148,7 +151,7 @@ export default class MyProfile extends Component{
                                 <Text style={styles.textInsideButton}>Settings</Text>
                             </Button>
                         </View>
-                        <View style={styles.singleButtonContainer}>
+                        {/* <View style={styles.singleButtonContainer}>
                             <Button
                                 onPress={() => Firebase.auth().signOut()}  
                                 rounded style={{backgroundColor: 'white', 
@@ -156,7 +159,7 @@ export default class MyProfile extends Component{
                                 <Icon name="settings" style={{fontSize: 24, color:'#202020', marginLeft: 10}} />
                                 <Text style={styles.textInsideButton}>Signout</Text>
                             </Button>
-                        </View>
+                        </View> */}
                         
                     </View>
                 </ScrollView>
@@ -215,8 +218,8 @@ const styles = StyleSheet.create({
         alignItems: 'center'
     },
     imageContainer: {
-        height: 280,
-        width: 220,
+        height: 300,
+        width: 250,
         overflow: 'hidden',
         borderColor: '#dddddd',
         borderRadius: 20,
