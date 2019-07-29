@@ -209,11 +209,8 @@ export default class CreateProfile extends Component{
                            </TouchableHighlight>
                            ) : ( <View>
                                    <TouchableHighlight onPress={this.openPickerImage}>
-                                        <Image 
-                                            source={require('../../../assets/images/profile.png')} 
-                                            style={{height: 140, width: 140}}
-                                        />
-                                    </TouchableHighlight>
+                                    <Text>Test</Text>
+                                   </TouchableHighlight>
                            </View>
                            )
         const loadImageData = this.state.loading ? (

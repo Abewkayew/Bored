@@ -20,6 +20,7 @@ import AddDetails from '../src/screens/Signup_Screen/AddDetails'
 import AddBestPicture from '../src/screens/Signup_Screen/AddBestPicture'
 import SelectSource from '../src/screens/Signup_Screen/SelectSource'
 import FinalStep from '../src/screens/Signup_Screen/FinalStep'
+import SendInvitation from '../src/screens/Invitation_Interface/SendInvitation'
 
 export const AppSwitchNavigator = createSwitchNavigator({
     Loading: {screen: Loading},
@@ -40,7 +41,9 @@ export const AppSwitchNavigator = createSwitchNavigator({
     AddDetails: {screen: AddDetails},
     AddBestPicture: {screen: AddBestPicture},
     SelectSource: {screen: SelectSource},
-    FinalStep: {screen: FinalStep}
-});
+    FinalStep: {screen: FinalStep},
+    SendInvitation: {screen: SendInvitation}
+
+})
 
 export const AppContainer = createAppContainer(AppSwitchNavigator);

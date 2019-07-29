@@ -151,7 +151,7 @@ export default class MyProfile extends Component{
                                 <Text style={styles.textInsideButton}>Settings</Text>
                             </Button>
                         </View>
-                        {/* <View style={styles.singleButtonContainer}>
+                        <View style={styles.singleButtonContainer}>
                             <Button
                                 onPress={() => Firebase.auth().signOut()}  
                                 rounded style={{backgroundColor: 'white', 
@@ -159,7 +159,7 @@ export default class MyProfile extends Component{
                                 <Icon name="settings" style={{fontSize: 24, color:'#202020', marginLeft: 10}} />
                                 <Text style={styles.textInsideButton}>Signout</Text>
                             </Button>
-                        </View> */}
+                        </View>
                         
                     </View>
                 </ScrollView>

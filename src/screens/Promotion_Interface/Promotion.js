@@ -1,19 +1,12 @@
 import React, {Component} from 'react';
-import {StyleSheet, View, Text, Image, ScrollView, TouchableHighlight, Dimensions, Animated, Platform} from 'react-native';
+import {StyleSheet, View, Text, Image, ScrollView, TouchableHighlight, Dimensions, Animated, Platform, TouchableOpacity} from 'react-native';
 import { Container, Header, Content, Card, CardItem, Thumbnail, Button, Left, Body, Right, Spinner } from 'native-base';
 import Icon from 'react-native-vector-icons/MaterialIcons'
-
-import ImageOverlay from "react-native-image-overlay";
-
-import {photos} from '../../../utils/assets'
-
-import { PermissionsAndroid } from 'react-native';
 
 import {getDistanceFromLatLonInKm} from '../../../utils/getDistance';
 
 import Polyline from '@mapbox/polyline'
 import MapViewDirections from 'react-native-maps-directions';
-import Firebase from '../../../utils/Config';
 
 import MapView, {
     ProviderPropType,
@@ -217,12 +210,17 @@ export default class Promotion extends Component{
                                     <ScrollView
                                         horizontal={true}
                                         showsHorizontalScrollIndicator={false}>
-                                        
                                         {
                                             this.promotions.map((data, index) => {
                                                 return(
-                                                <Category imageUri={{uri: data.image }} text={data.text}
-                                                />                                                         
+                                                    <TouchableOpacity 
+                                                        onPress={() => this.props.navigation.navigate('SendInvitation', {
+                                                            promotionUrl: data.image,
+                                                            text: data.text
+                                                        })}
+                                                        >
+                                                        <Category imageUri={{uri: data.image }} text={data.text}/>
+                                                    </TouchableOpacity>
                                                 )
                                             })
                                         }

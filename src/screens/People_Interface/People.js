@@ -1,6 +1,6 @@
 import React, {Component} from 'react'
-import {StyleSheet, View, Text, Image, ScrollView, TouchableHighlight, Dimensions,
-         Animated, TouchableOpacity} from 'react-native'
+import {StyleSheet, View, Text, Image, ScrollView, TouchableOpacity, Dimensions,
+         Animated} from 'react-native'
 import { Container, Header, Content, Card, CardItem, Thumbnail, Button, Left, Body, Right, Spinner } from 'native-base'
 import Icon from 'react-native-vector-icons/MaterialIcons'
 
@@ -24,7 +24,9 @@ export default class People extends Component{
             currentUser: null,
             noPeople: false,
          }
+
          this.actName = this.props.navigation.state.params.activityName 
+    
       }
       componentDidMount() {
         const that = this;
@@ -47,16 +49,17 @@ export default class People extends Component{
                         peoples.push(person)
                     }
 
-                if(peoples.length < 1){
-                    that.setState({loading: false, noPeople: true})
-                }else{
                 // Display People Data here 
                 const peopleArray = []
                     for (var i = 0; i < peoples.length; i++){
                         const userID = peoples[i].id
-
                         userDatabaseReference.child(peoples[i].id).once("value", (snapShot) => {
                             let profileData = snapShot.val()
+                            let birthDate = new Date(profileData.birthDate).getFullYear()
+                            let timeNow = new Date().getFullYear()
+
+                            let userAge = timeNow - birthDate
+
                             const photoArray = []
                             snapShot.child("ProfileImages").forEach(profileData => {
                                 const photoData = profileData.val()
@@ -70,7 +73,8 @@ export default class People extends Component{
                                     nombre: profileData.nombre,
                                     phone: profileData.phone,
                                     userId: userID,
-                                    photos: photoArray
+                                    photos: photoArray,
+                                    age: userAge
                                 }
     
                                 if(userID !== currentUser.uid){
@@ -86,11 +90,12 @@ export default class People extends Component{
                         )
                         // }
                     }
-                }
-
-                
                         
-            });
+            })
+            
+            if(peoples.length < 1){
+                that.setState({loading: false, noPeople: true})
+            }
         
         })
      
@@ -109,21 +114,21 @@ export default class People extends Component{
         return(
             <View style={styles.containerPeople}>
                     <View style={styles.navigationBar} elevation={20}>
-                            <TouchableHighlight style={styles.navigationItems} 
+                            <TouchableOpacity style={styles.navigationItems} 
                                 onPress={() => this.props.navigation.navigate('Activity')}>
                                 <Icon name="arrow-back" size={30}/>
-                            </TouchableHighlight>
-                            <TouchableHighlight style={styles.navigationItems} onPress={() => this.props.navigation.navigate('Activity')}>
+                            </TouchableOpacity>
+                            <TouchableOpacity style={styles.navigationItems} onPress={() => this.props.navigation.navigate('Activity')}>
                                 <Icon name="mood" style={{fontSize: 40, color: '#4DDFE5'}}/>
                                
-                            </TouchableHighlight>
+                            </TouchableOpacity>
                             <View style={styles.navigationItems}>
-                                <TouchableHighlight onPress={() => this.props.navigation.navigate('ChatContainer')}>
+                                <TouchableOpacity onPress={() => this.props.navigation.navigate('ChatContainer')}>
                                 <Image 
                                     source={require('../../../assets/images/message_single_two.png')}
                                     style={{width: 40, height: 40}}
                                    />
-                                </TouchableHighlight>
+                                </TouchableOpacity>
                                 <Button  
                                     rounded style={{top: -15, left: 15, backgroundColor: '#4DDFE5',
                                     padding: 5, width: 20, height: 20, alignContent: 'center'}}>
@@ -140,20 +145,21 @@ export default class People extends Component{
                         <View style={styles.tabViewStyle}>
 
                         <View style={styles.singleButtonContainer}>
-                            <TouchableHighlight>
+                            <TouchableOpacity>
                                 <Button 
                                 rounded style={{backgroundColor: '#4DDFE5', padding: 5, width: 150, alignContent: 'center'}}>
                                     <Text style={{color: '#fff', fontWeight: 'bold', fontSize: 17, alignSelf: 'center', marginLeft: 15}}>Person</Text>
                                 </Button>
-                            </TouchableHighlight>
+                            </TouchableOpacity>
                         </View>
                         <View style={styles.singleButtonContainer}>
-                            <TouchableHighlight>
+                            <TouchableOpacity
+                             >
                                 <Button   onPress={() => this.props.navigation.navigate('Invitation', {actName: this.actName})}
-                                 rounded style={{backgroundColor: 'white', padding: 5, width: 150, alignItems: 'center'}}>
+                                 rounded style={{backgroundColor: 'white', padding: 5, width: 150}}>
                                     <Text style={styles.textInsideButton}>Invitation</Text>
                                 </Button>
-                            </TouchableHighlight>
+                            </TouchableOpacity>
                             
                         </View>
 
@@ -192,7 +198,7 @@ export default class People extends Component{
                                                             {data.photos.map((source, i) => { // for every object in the photos array...
                                                             return ( // ... we will return a square Image with the corresponding object as the source
                                                             <View  style={styles.imageContainer}>
-                                                                    <TouchableHighlight 
+                                                                    <TouchableOpacity 
                                                                         onPress={() => this.props.navigation.navigate('Profile',
                                                                         {actName: this.actName, userId: data.userId})}
                                                                       >
@@ -205,7 +211,7 @@ export default class People extends Component{
                                                                         >
                                                                         <View style={{alignItems: 'center'}}>
                                                                             <View style={{flexDirection: 'row', alignSelf: 'center'}}>
-                                                                                <TouchableHighlight 
+                                                                                <TouchableOpacity 
                                                                                     onPress={() => this.props.navigation.navigate('SingleChat', {user: data.userId, actName: this.actName})}
                                                                                     style={styles.styleMessage}
                                                                                     >
@@ -213,7 +219,7 @@ export default class People extends Component{
                                                                                                 source={require('../../../assets/images/message_single_two.png')}
                                                                                                 style={{width: 40, height: 40}}
                                                                                             />
-                                                                                </TouchableHighlight>
+                                                                                </TouchableOpacity>
                                                                             </View>
                             
                                                                             <View style={{flexDirection: 'row'}}>
@@ -242,7 +248,7 @@ export default class People extends Component{
 
 
                                                                     </ImageOverlay> 
-                                                                </TouchableHighlight>
+                                                                </TouchableOpacity>
                                                             
                                                             </View>
                                                             
@@ -256,12 +262,11 @@ export default class People extends Component{
                                                 </View>
                                                 <View style={styles.profileInfoContainer}>
                                                     <View style={{flexDirection: 'row', justifyContent: 'center'}}>
-                                                    
                                                         {/* <TouchableOpacity
                                                             onPress={() => this.props.navigation.navigate('SingleChat', {user: data.userId, actName: this.actName})}>
                                                         <Text>Chat</Text>
                                                         </TouchableOpacity> */}
-                                                        <Text style={{fontSize: 20, fontWeight:'bold'}}>{data.nombre}  27</Text>
+                                                        <Text style={{fontSize: 20, fontWeight:'bold'}}>{data.nombre}  {data.age}</Text>
                                                         <Image source={require('../../../assets/images/camera_1.png')} 
                                                             style={{width: 25, height: 25, marginLeft: 60}}/>
                                                         <Text style={{fontSize: 20, fontWeight: 'bold', marginLeft: 5}}>{data.photos.length}</Text>   

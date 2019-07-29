@@ -75,7 +75,8 @@ export default class SignUp extends Component {
 
 
   handleFacebookLogin = () => {
-    alert("Facebook login to be done later")
+    // alert("Facebook login to be done later")
+    this.props.navigation.navigate('Login')
   }
   handleGoogleLogin = () => {
     alert("Google login to be done later")

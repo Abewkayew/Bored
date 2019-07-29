@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import {StyleSheet, View, Text, Image, ScrollView, TouchableHighlight}  from 'react-native';
+import {StyleSheet, View, Text, Image, ScrollView, TouchableHighlight, TouchableOpacity}  from 'react-native';
 import { Container, Header, Content, Card, CardItem, Thumbnail, Button, Left, Body, Right, Spinner} from 'native-base';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import Dialog, { DialogFooter, DialogButton, DialogContent, SlideAnimation, DialogTitle} from 'react-native-popup-dialog';
@@ -104,15 +104,13 @@ export default class Activities extends Component{
                 let actExists = false
 
                 for (var i = 0; i < peoples.length; i++) {
-                    if(actName ==peoples[i].acName){
+                    if(actName == peoples[i].acName){
                         actExists = true
                         that.setState({isFullTime: true})
-        
                     }
                 }                
                 if(actExists === true){
                     if(this.state.loading === false){
-                        this.setState({isFullTime: true})
                         that.props.navigation.navigate('People', {activityName: actName})
                     }
                 }else{
@@ -352,9 +350,11 @@ export default class Activities extends Component{
     }
     
     render(){
-
-        const {loading, visible, minutesLeft, isFullTime} = this.state;
+        const  {loading, visible, minutesLeft, isFullTime} = this.state
         
+        var secd = minutesLeft % 60
+        var seconds = Math.ceil(secd)
+
         return(
             <View style={styles.container}>
             <Dialog
@@ -366,30 +366,33 @@ export default class Activities extends Component{
                 dialogAnimation={new SlideAnimation({
                     slideFrom: 'bottom',
                   })}
-                dialogTitle={<DialogTitle title="Time left indicator" />}
-                footer={
-                    <DialogFooter>
-                      <DialogButton
-                        style={{color: 'red'}}
-                        text="Dismiss"
-                        onPress={() => {this.setState({visible: false})}}
-                      />
-                    </DialogFooter>
-                  }  
+                overlayOpacity={0.7}  
                 >
                 <DialogContent>
-                    
-                        {
-                            minutesLeft > 0 ? (
-                                <View>
-                                    <Text style={styles.dialogContentTextStyle}><Text style={{color: 'red'}}>{minutesLeft}</Text> minutes left to go to next activity</Text>
-                                </View>
-                            ): (
-                                <View>
-                                    <Text style={styles.dialogContentTextStyle}>Few seconds left to go to next Activity</Text>
-                                </View>
-                            )
-                        }
+                    {
+                        minutesLeft > 0 ? (
+                            <View style={{justifyContent: 'center', alignItems: 'center', marginVertical: 20}}>
+                                <Text style={{marginVertical: 10, fontSize: 18}}>You run out of activities</Text>
+                                <Text style={styles.dialogContentTextStyle}>
+                                    You may choose a new activity in <Text style={{color: '#21CEFF'}}>00:{minutesLeft}:{seconds}</Text>
+                                    </Text>
+                            </View>
+                        ): (
+                            <View>
+                                <Text style={styles.dialogContentTextStyle}>Few seconds left to go to next Activity</Text>
+                            </View>
+                        )
+                    }
+                    <TouchableOpacity
+                        onPress={() => {this.setState({visible: false})}}
+                        style={{alignSelf: 'center'}}
+                        >
+                        <Button rounded 
+                            onPress={() => {this.setState({visible: false})}}
+                            style={{backgroundColor: '#21CEFF', width: 90, justifyContent: 'center', alignItems: 'center'}}>
+                            <Text style={{color: 'white', fontSize: 18}}>Ok</Text>
+                        </Button>
+                    </TouchableOpacity>
                 </DialogContent>
             </Dialog>
 
@@ -598,7 +601,9 @@ const styles = StyleSheet.create({
         marginVertical: 15
     },
     dialogContentTextStyle: {
-        fontSize: 18, 
-        fontWeight: 'bold'
+        fontSize: 18,
+        fontWeight: '300',
+        marginHorizontal: 25,
+        alignSelf: 'center'
     }
 });

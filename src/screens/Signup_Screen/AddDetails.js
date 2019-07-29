@@ -79,14 +79,7 @@ export default class AddDetails extends Component {
               this.setState({
                   loading: false
               })
-              that.props.navigation.navigate('AddBestPicture', {
-                phoneNumber: phoneNumber,
-                wantToMeet: userMeetsGender,
-                gender: userGender,
-                nombre: name,
-                birthDate: birthDate
-              })
-
+              that.props.navigation.navigate('AddBestPicture')
           })     
           
       })
@@ -99,11 +92,19 @@ export default class AddDetails extends Component {
   render() {
 
     const {loading} = this.state
-    
+    const userGender = this.userGender
+    const userMeetsGender = this.userMeetsGender
+    const phoneNumber = this.phoneNumber
+
     return (
       <View style={styles.container}>
           <View style={styles.containNavbar}>
-            <TouchableHighlight onPress={() => this.props.navigation.navigate('AddFirstName')}>
+            <TouchableHighlight onPress={() => this.props.navigation.navigate('AddFirstName', {
+                 userGender: userGender,
+                 userMeetsGender: userMeetsGender,
+                 phoneNumber: phoneNumber
+                })}
+            >
                 <Icon name="arrow-back" size={30}/>
             </TouchableHighlight>
 

@@ -9,7 +9,7 @@ import Firebase from '../../../utils/Config'
 
 import firebase from 'firebase'
 
-import { GiftedChat } from 'react-native-gifted-chat'
+import { GiftedChat, InputToolbar} from 'react-native-gifted-chat'
 
 const { width, height } = Dimensions.get('window')
 
@@ -22,8 +22,7 @@ export default class SingleChat extends Component{
             currentUserID: null,
             messagesList: [],
             userData: {},
-            profileImage: null,
-            messageSeen: false
+            profileImage: null
         }
  
         this.actName = this.props.navigation.state.params.actName 
@@ -36,43 +35,33 @@ export default class SingleChat extends Component{
         })   
     }
 
-    submitMessage = () => {
+    onSend(messages = []) {
+
+        const messageBody = messages[0].text
 
         const activityMeet = this.actName
 
-        if(this.state.txtMessage.length > 0){
-             let messageID = Firebase.database().ref('messages').child(this.state.currentUserID).child(this.anotherUserId).push().key
-             let chatID = Firebase.database().ref('chats').child(this.anotherUserId).child(this.state.currentUserID).push().key
-            
-             let updates = {}
+        let messageID = Firebase.database().ref('messages').child(this.state.currentUserID).child(this.anotherUserId).push().key
+        let chatID = Firebase.database().ref('chats').child(this.anotherUserId).child(this.state.currentUserID).push().key
+    
+        let updates = {}
 
-             let message = {
-                 message: this.state.txtMessage,
-                 time: firebase.database.ServerValue.TIMESTAMP,
-                 from: this.state.currentUserID,
-                 messageId: messageID,
-                 seen: false,
-                 activityMet: activityMeet
-             }
+        let message = {
+            message: messageBody,
+            time: firebase.database.ServerValue.TIMESTAMP,
+            from: this.state.currentUserID,
+            messageId: messageID,
+            seen: false,
+            activityMet: activityMeet
+        }
 
-             let chat = {
-                 seen: false,
-                 time: message.time
-             }
+        updates['messages/' + this.state.currentUserID + '/' + this.anotherUserId + "/" + messageID] = message
+        updates['messages/' + this.anotherUserId + '/' + this.state.currentUserID + "/" + messageID] = message
 
-             updates['messages/' + this.state.currentUserID + '/' + this.anotherUserId + "/" + messageID] = message
-             updates['messages/' + this.anotherUserId + '/' + this.state.currentUserID + "/" + messageID] = message
-             updates['chats/' + this.anotherUserId + '/' + this.state.currentUserID + '/' + chatID]= chat
+        this.setState(previousState => ({
+            messages: GiftedChat.append(previousState.messages, messages)
+        }))
 
-             Firebase.database().ref().update(updates).then(() => {
-                 this.setState({txtMessage: ''})
-             }).catch((error) => {
-                 console.log(error)
-             })
-
-           }else{
-                return
-           }
     }
 
     
@@ -84,7 +73,7 @@ export default class SingleChat extends Component{
         let that = this
         const userDatbaseReference = Firebase.database().ref('users').child(this.anotherUserId)
         const profileImagePath = userDatbaseReference.child('ProfileImages').limitToLast(1)
-        const messagePath = Firebase.database().ref('messages').child(currentUser.uid).child(this.anotherUserId)
+
         profileImagePath.once('value', dataSnap => {
             var imageUrl = []
 
@@ -105,7 +94,10 @@ export default class SingleChat extends Component{
 
         })
 
-        messagePath.on('child_added', (value) => {
+
+
+        Firebase.database().ref('messages').child(currentUser.uid).child(this.anotherUserId)
+        .on('child_added', (value) => {
              
             userDatbaseReference.once('value', dataSnapshot => {
                 let data = dataSnapshot.val()
@@ -120,21 +112,21 @@ export default class SingleChat extends Component{
                 var avatar = "https://randomuser.me/api/portraits/women/91.jpg"
                 
 
-                // const messageData = {
-                //     _id: currentUserID,
-                //     text: message,
-                //     createdAt: new Date(time),
-                //     user: {
-                //       _id: anotherUserId,
-                //       name: user.name,
-                //       avatar: user.image
-                //     }
-                //   }
+                const messageData = {
+                    _id: currentUserID,
+                    text: message,
+                    createdAt: new Date(time),
+                    user: {
+                      _id: anotherUserId,
+                      name: anotherUserName,
+                      avatar: avatar
+                    }
+                  }
     
     
                 that.setState((prevState) => {
                     return {
-                        messagesList: [...prevState.messagesList, value.val()]
+                        messagesList: [...prevState.messagesList, messageData]
                     }
                 })
             })
@@ -197,72 +189,34 @@ export default class SingleChat extends Component{
 
     }
 
+    renderInputToolbar (props) {
+        //Add the extra styles via containerStyle
+       return(
+            <View style={{flexDirection: 'row'}}>
+                <Text>Test1</Text>
+                <InputToolbar {...props} containerStyle={{borderTopWidth: 1.5, borderTopColor: '#333', marginHorizontal: 40}} />
+                <Text>Test2</Text>
+            </View>
+       )
+     }
+
     render(){
-        const {userData, profileImage} = this.state
+
+        const {userData, profileImage,  messagesList, currentUserID} = this.state
 
         return(
-            <View style={styles.containerSingleChat}>
-                    <View style={styles.singleChatNavBar} elevation={1}>
-                        <View style={styles.containLeftSideUserDetail}>
-                            <TouchableOpacity onPress={() => 
-                                (typeof this.actName) == 'undefined' ? 
-                                    this.props.navigation.navigate('Activity')
-                                    : 
-                                    this.props.navigation.navigate('People', {activityName: this.actName})
-                                }>
-                                <Icon name="arrow-back" size={40}/>
-                            </TouchableOpacity>
-                            <TouchableOpacity onPress={() => this.props.navigation.navigate('Profile', {actName: this.actName})}>
-                                <Image source={{uri: profileImage}}
-                                    style={{width: 50, height: 50, borderRadius: 80/ 2, left: 20}}/>
-                            </TouchableOpacity>
-                            <View style={styles.navBarUserDetail}>
-                                <Text style={styles.nameStyle}>{userData.nombre}, 27</Text>
-                                <View style={styles.userStatus}>
-                                    <Text style={styles.statusOfflineOrActive}>Active</Text>
-                                    <Image
-                                        source={require('../../../assets/images/user_online_1.png')} 
-                                        style={{height: 15, width: 15, margin: 5}}
-                                    />
-                                </View>    
-                            </View>
-                        </View>
-                        <View style={styles.optionsMenu}>
-                            <Icon name="more-vert" size={35}/>
-                        </View>
-                    </View>
-                    {/* <ScrollView> */}
-                        <View style={{height: height*0.8}}>
-                            <ScrollView>
-                                    <FlatList
-                                        style={{padding: 10, height: height}}
-                                        data={this.state.messagesList}
-                                        renderItem={this.renderRow}
-                                        keyExtractor={(item, index) => index.toString()}
-                                        />
-                            </ScrollView>
-                        </View>
-                        <View style={styles.inputView}>
-                            <Icon name="camera-alt" color="#4DDFE5"  size={35}/>
-                            <Icon name="insert-photo" color="#4DDFE5"  size={35}/>
-                            <View style={styles.inputContainer}>
-                                <TextInput
-                                    style={styles.input}
-                                    value={this.state.txtMessage}
-                                    placeholder="Type your message"
-                                    autoCapitalize={false}
-                                    multiline={true}
-                                    onChangeText={this.handleTextMessage}
-                                />
-                            </View>
-                            <TouchableOpacity onPress={this.submitMessage}>
-                                <Icon name="send" color="#4DDFE5"  size={30} />
-                            </TouchableOpacity>
-                            <Icon name="mood"  color="#4DDFE5" size={35}/>
-                        </View>
-
+            <View style={{flex: 1}}>
+                <View style={{flex: 0.2}}>
+                    <Text>Single Chat</Text>
+                </View> 
+                <View style={{flex: 1}}>
+                    <GiftedChat
+                        renderInputToolbar={this.renderInputToolbar} 
+                    />
+                </View>
+                        
             </View>
-        );
+        )
     }
 }
 
@@ -300,6 +254,7 @@ const styles = StyleSheet.create({
     },
     chatMessagesContainer: {
          padding: 10,
+         height: '75%',
     },
     inputView: {
         height: '25%',

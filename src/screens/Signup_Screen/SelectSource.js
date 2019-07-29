@@ -200,18 +200,18 @@ export default class SelectSource extends Component {
         
             <Text style={styles.navbarText}>Select Source</Text>
           </View>
-          {
-            loading ? (
-                <View style={{justifyContent:'center', flexDirection: 'row'}}>
-                  <Spinner color="#21CEFF"/> 
-                    <View style={{marginLeft: 10, marginTop: 30}}>
-                        <Text style={{color: '#21CEFF', fontSize: 18, fontWeight: 'bold'}}>Saving information...</Text>  
-                    </View>
-                </View>
-              ):(
-              <Text style={{color: 'white'}}>''</Text>
-          )
-          }
+            {
+              loading ? (
+                  <View style={{justifyContent:'center', flexDirection: 'row'}}>
+                    <Spinner color="#21CEFF"/> 
+                      <View style={{marginLeft: 10, marginTop: 30}}>
+                          <Text style={{color: '#21CEFF', fontSize: 18, fontWeight: 'bold'}}>Saving information...</Text>  
+                      </View>
+                  </View>
+                ):(
+                <Text style={{color: 'white'}}>''</Text>
+              )
+            }
 
             <View style={styles.containInput}>
                 <TouchableOpacity  style={clickedCamera ? styles.containSelectorActive: styles.containSelector}

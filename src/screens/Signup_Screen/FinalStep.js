@@ -10,6 +10,15 @@ import { LoginButton, AccessToken,  LoginManager } from 'react-native-fbsdk'
 
 const { width, height } = Dimensions.get('window')
 
+const images = [
+  { uri: '../../../assets/images/together_1.jpg'},
+  { uri: '../../../assets/images/together_2.jpg'},
+  { uri: '../../../assets/images/together_3.jpg'},
+  { uri: '../../../assets/images/together_4.jpg'},
+  { uri: '../../../assets/images/together_5.jpg'},
+  { uri: '../../../assets/images/together_6.jpg'},
+  { uri: '../../../assets/images/together_7.jpg'}
+]
 
 export default class FinalStep extends Component {
 
@@ -32,7 +41,7 @@ export default class FinalStep extends Component {
         this.latitude = parameters.latitude
         this.longitude = parameters.longitude
         this.profileImageUrl = parameters.profileImageUrl
-        
+
     }
 
     saveState = () => {
@@ -111,15 +120,14 @@ export default class FinalStep extends Component {
                 <View style={{justifyContent: 'space-between'}}>
                     <Text style={{fontSize: 18, fontWeight: '400'}}>Just choose your favorite activity.</Text>
                 </View>
-
                 <View style={{justifyContent: 'space-between'}}>
-                    <Text style={{fontSize: 18, fontWeight: '400'}}>Each activity you choose will be 
+                    <Text style={{fontSize: 18, fontWeight: '400', marginVertical: 10}}>Each activity you choose will be 
                         active for 60 min. And you may 
                         only have 2 active activities.
                     </Text>
                 </View>
-                
                 <Text style={styles.textChooseWisely}>So choose wisely !</Text>
+
             </View>
           </View>
           <View style={styles.containNextButton}>

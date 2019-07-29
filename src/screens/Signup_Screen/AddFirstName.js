@@ -44,13 +44,16 @@ export default class AddFirstName extends Component {
 
 
   render() {
+    
+    const phoneNumber = this.phoneNumber
+
     return (
       <View style={styles.container}>
           <View style={styles.containNavbar}>
-            <TouchableHighlight onPress={() => this.props.navigation.navigate('SelectGender')}>
+            <TouchableHighlight onPress={() => this.props.navigation.navigate('SelectGender', {phoneNumber: phoneNumber})}>
                 <Icon name="arrow-back" size={30}/>
             </TouchableHighlight>
-
+            
             <Text style={styles.navbarText}>Add Your First Name</Text>
           </View>
           <View style={styles.containInput}>
